@@ -3,26 +3,62 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b2536">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23971b3c'/%3E%3Cpath d='M7 9h6a3 3 0 0 1 3 3v12a2.5 2.5 0 0 0-2.5-2.5H7zM25 9h-6a3 3 0 0 0-3 3v12a2.5 2.5 0 0 1 2.5-2.5H25z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Boletines: Fuente Wise2</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--blue:#2563eb;--blue2:#1e40af;--bg:#f4f7fb;--card:#fff;--line:#dce3ed;--text:#172033;--muted:#64748b;--green:#059669;--red:#dc2626;--orange:#d97706}
+/*
+ * Paleta de la interfaz, tomada de los propios boletines: verde azulado (#246f83, el de los
+ * encabezados de las tablas) como color principal y granate (#971b3c, el del título del boletín)
+ * como acento. --blue/--blue2 conservan su nombre para no tocar las reglas que ya los usan.
+ * --line NO se cambia: también dibuja las líneas de las tablas exportadas y de los boletines.
+ */
+:root{--blue:#246f83;--blue2:#1b5a6b;--brand:#971b3c;--navy:#0b2536;--bg:#f1f5f8;--card:#fff;--line:#dce3ed;--text:#172033;--muted:#64748b;--green:#047857;--red:#dc2626;--orange:#d97706;--ring:0 0 0 3px #246f8347;--shadow:0 1px 2px #0b25360d,0 6px 18px #0b25360f;--bar-h:64px}
+html{scroll-padding-top:calc(var(--bar-h) + 12px)}
+::selection{background:#bfe0e8;color:#0b2536}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px "Segoe UI",Arial,sans-serif;color:var(--text)}
-.top{background:linear-gradient(135deg,#172554,#2563eb);color:#fff;padding:22px 28px}.top h1{margin:0;font-size:25px}.top p{margin:5px 0 0;opacity:.85}
+/* Barra superior fija: marca + pestañas siempre a la vista al desplazarse. */
+.top{position:sticky;top:0;z-index:60;background:linear-gradient(115deg,#0b2536 0%,#14475b 55%,#246f83 100%);color:#fff;padding:0 22px;border-bottom:3px solid var(--brand);box-shadow:0 8px 22px #0b25362e}
+.top-inner{max-width:1550px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px 22px;flex-wrap:wrap;padding:9px 0 8px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 260px}
+.brand-mark{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--brand);color:#fff;box-shadow:inset 0 0 0 1px #ffffff2e,0 3px 10px #00000033}
+.brand-mark .ico{width:21px;height:21px}
+.brand-text{min-width:0}
+.top h1{margin:0;font-size:19px;line-height:1.2;font-weight:800;letter-spacing:.2px;white-space:nowrap}.top h1 small{font-size:13px;font-weight:600;opacity:.75;margin-left:4px}
+.top p{margin:2px 0 0;font-size:12px;opacity:.8;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wrap{max-width:1550px;margin:auto;padding:18px}
-.tabs{display:flex;gap:6px;margin-bottom:15px}.tab{border:1px solid var(--line);background:#fff;padding:11px 22px;border-radius:10px 10px 0 0;font-weight:800;cursor:pointer}.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:#ffffff1a;box-shadow:inset 0 0 0 1px #ffffff26;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.tab{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;color:#ffffffd6;padding:9px 16px;border-radius:10px;font-size:13.5px;font-weight:700;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s,box-shadow .15s}
+.tab:hover{background:#ffffff24;color:#fff}
+.tab.active{background:#fff;color:#0d3347;box-shadow:0 2px 8px #0b253640}
+.tab:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:none}
+.tab-count{min-width:22px;padding:2px 7px;border-radius:999px;background:#ffffff33;font-size:11px;font-weight:800;line-height:1.3;text-align:center}
+.tab-count[hidden]{display:none}
+.tab.active .tab-count{background:var(--blue);color:#fff}
 .page{display:none}.page.active{display:block}
-.grid{display:grid;grid-template-columns:390px 1fr;gap:16px}.grid>.left{position:sticky;top:18px;align-self:start;max-height:calc(100vh - 36px);overflow-y:auto;overscroll-behavior:contain;padding-right:6px}.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:0 4px 16px #1720330b;margin-bottom:16px}
+/* La columna izquierda queda fija debajo de la barra superior (--bar-h se ajusta solo al alto real de la barra). */
+.grid{display:grid;grid-template-columns:390px 1fr;gap:18px}.grid>.left{position:sticky;top:calc(var(--bar-h) + 14px);align-self:start;max-height:calc(100vh - var(--bar-h) - 28px);overflow-y:auto;overscroll-behavior:contain;padding:2px 8px 14px 2px;margin:-2px 0 0 -2px;scrollbar-width:thin}.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
 h2{font-size:16px;margin:0 0 9px}.muted{color:var(--muted);font-size:12px;line-height:1.45}
-.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}.card-head h2{margin:0}
-.collapse-btn{flex:none;border:1px solid var(--line);background:#fff;color:#334155;border-radius:7px;height:26px;min-width:26px;padding:0 8px;font-size:13px;font-weight:800;line-height:24px}.collapse-btn:hover{background:#eef2f7}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.card-head h2{margin:0;display:flex;align-items:center;gap:9px;min-width:0;font-size:15.5px;font-weight:800;color:#0f3347}
+.card-head:has(+.card-body.collapsed){margin-bottom:0}
+/* Número de paso (1, 2, 3, 4) como insignia redonda junto al título de la sección. */
+.step{flex:none;width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;background:var(--blue);color:#fff;font-size:12px;font-weight:800;line-height:1}
+.collapse-btn{flex:none;width:30px;height:30px;padding:0;border:1px solid var(--line);background:#fff;color:#4b5d6e;border-radius:9px;display:inline-grid;place-items:center}.collapse-btn:hover{background:#eef4f7;color:var(--blue);border-color:#b9d3db}
+.collapse-btn .ico{width:16px;height:16px;transition:transform .18s ease}.collapse-btn[aria-expanded="false"] .ico{transform:rotate(-90deg)}
 .card-body.collapsed{display:none}
 /* height fija (no min-height): antes crecía sin límite al pegar tablas largas, empujando el resto del layout. */
-.paste{width:100%;height:130px;border:2px dashed #aebbcf;border-radius:10px;background:#fbfdff;padding:11px;outline:0;white-space:pre-wrap;overflow:auto}.paste:focus{border-color:var(--blue);background:#fff}.paste:empty:before{content:"Pega aquí la tabla copiada de la página…";color:#8b98aa}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}button{border:0;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer;background:#e9eef5;color:#26344a}button.primary{background:var(--blue);color:#fff}button.primary:hover{background:var(--blue2)}button.green{background:var(--green);color:#fff}button.danger{background:#fee2e2;color:#991b1b}
-.status{margin-top:10px;padding:9px;border-radius:8px;background:#f1f5f9;color:#475569;font-size:12px}.status.ok{background:#ecfdf5;color:#065f46}.status.warn{background:#fffbeb;color:#92400e}
+.paste{width:100%;height:130px;border:2px dashed #aebfca;border-radius:12px;background:#fafcfd;padding:11px;outline:0;white-space:pre-wrap;overflow:auto;transition:border-color .15s,background .15s,box-shadow .15s}.paste:hover{border-color:#7fa9b6}.paste:focus{border-color:var(--blue);background:#fff;box-shadow:var(--ring)}.paste:not(:empty){border-style:solid;border-color:#9cc3cd;background:#fff}.paste:empty:before{content:"Pega aquí la tabla copiada de Wise2 (Ctrl + V)";color:#7d8c9b}
+/* Botones: mismo tamaño y forma en toda la herramienta; color según la acción (principal, guardar/descargar, borrar). */
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{border:0;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer;background:#e9eef5;color:#26344a}
+/* «Ver boletín» queda con su estilo original: aparece dentro del JPEG de «Candidatos a graduación» y esa imagen no debe cambiar. */
+button:where(:not(.student-report-btn)){display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:9px;padding:9px 14px;font:inherit;font-size:13px;font-weight:700;line-height:1.2;background:#e6edf3;color:#1f3447;transition:background .15s,color .15s,box-shadow .15s,transform .06s}
+button:where(:not(.student-report-btn)):hover{background:#d8e2ea}button:active:not(:disabled){transform:translateY(1px)}button:focus-visible{outline:0;box-shadow:var(--ring)}button:disabled{opacity:.5;cursor:not-allowed}
+button.primary{background:var(--blue);color:#fff}button.primary:hover{background:var(--blue2)}button.green{background:var(--green);color:#fff}button.green:hover{background:#065f46}button.danger{background:#fdecec;color:#a11d1d}button.danger:hover{background:#fbd3d3}
+.status{margin-top:10px;padding:10px 12px;border-radius:10px;border-left:4px solid #b6c3d0;background:#f1f5f9;color:#475569;font-size:12px;line-height:1.5}.status.ok{background:#ecfdf5;border-left-color:#10b981;color:#065f46}.status.warn{background:#fffbeb;border-left-color:#f59e0b;color:#92400e}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.kpi{border:1px solid var(--line);border-radius:9px;padding:10px;background:#fbfcfe}.kpi b{font-size:20px;display:block}.kpi span{font-size:11px;color:var(--muted)}
 .scroll{overflow:auto;border:1px solid var(--line);border-radius:9px;max-height:460px}table{border-collapse:collapse;width:100%;background:#fff;font-size:12px}th,td{padding:8px 9px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}th{position:sticky;top:0;background:#f7f9fc;z-index:2}
 /* Manejador para ajustar el ancho de cada columna de "4. Tabla final" arrastrando el borde derecho de su encabezado. */
@@ -42,7 +78,7 @@ h2{font-size:16px;margin:0 0 9px}.muted{color:var(--muted);font-size:12px;line-h
 .bulletin-text-config{display:grid;gap:9px;margin-top:10px}.bulletin-text-config label{display:grid;gap:5px;font-size:12px;font-weight:700;color:#475569}.bulletin-text-config input,.bulletin-text-config textarea{width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:8px;font:inherit;font-weight:400;color:var(--text)}.bulletin-text-config textarea{resize:vertical;min-height:62px;line-height:1.4}
 .config .card-body{max-height:65vh;overflow-y:auto;overscroll-behavior:contain;padding-right:6px}
 .kpi-config{display:grid;gap:10px;margin-top:12px}.kpi-boundaries{display:grid;grid-template-columns:1fr 1fr;gap:9px}.kpi-config label{display:grid;gap:5px;font-size:12px;font-weight:700;color:#475569}.kpi-config input[type=number]{width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:8px;font:inherit;font-weight:400;color:var(--text)}.kpi-colors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kpi-colors label{display:flex;align-items:center;gap:7px}.kpi-colors input[type=color]{width:34px;height:30px;padding:2px;border:1px solid #cbd5e1;border-radius:6px;background:#fff}.kpi-ranges{padding:9px;border-radius:8px;background:#f8fafc;font-size:12px;line-height:1.7;color:#475569}.kpi-error{min-height:16px;color:#b91c1c;font-size:12px}
-.graduation-layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:16px;align-items:start}.graduation-config{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto;overscroll-behavior:contain;padding-right:6px}.graduation-config input[type=file]{max-width:100%;font-size:12px}.graduation-course-list{display:grid;gap:8px;margin-top:12px}.graduation-course-row{display:grid;grid-template-columns:minmax(66px,1.1fr) minmax(68px,1.15fr) 74px 28px minmax(60px,.85fr);gap:5px;align-items:center}.graduation-course-row input,.graduation-course-row select{min-width:0;width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:7px;background:#fff;font:inherit;font-size:12px}.graduation-course-head{font-size:9px;color:var(--muted);font-weight:800}.graduation-course-code{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}.graduation-course-output{font-weight:700;color:#1e3a8a}.graduation-report-wrap{overflow:auto;border:1px solid var(--line);border-radius:9px;max-height:70vh}.graduation-report{border-collapse:collapse;min-width:100%;background:#fff;font-size:12px;table-layout:fixed}.graduation-report th{position:sticky;top:0;background:#246f83;color:#fff;text-align:center;text-transform:uppercase;font-size:10px;z-index:2}.graduation-report td,.graduation-report th{position:relative;padding:8px 11px 8px 9px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.graduation-report td.number{text-align:center;font-variant-numeric:tabular-nums}.graduation-report tr.candidate-start td{border-top:2px solid #94a3b8}.graduation-report tr.course-current td{font-weight:700}.graduation-report .student-action-col,.graduation-report .student-action-cell{min-width:65px}.graduation-report .student-report-btn{width:100%;min-width:0;padding:5px 4px;white-space:normal}.graduation-report tr.kpi-credits-strong td{background:var(--credits-kpi-strong,#dcfce7);color:#14532d}.graduation-report tr.kpi-credits-near td{background:var(--credits-kpi-near,#fef3c7);color:#78350f}.graduation-report tr.kpi-credits-low td{background:var(--credits-kpi-low,#fee2e2);color:#7f1d1d}.graduation-report .credits-status{display:inline-block;margin-left:5px;border-radius:999px;padding:2px 6px;font-size:9px;font-weight:800;background:#fff9}.graduation-report .course-tag{display:inline-block;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800;background:#f1f5f9;color:#475569}.graduation-report .course-tag.current{background:#dcfce7;color:#166534}.graduation-report .ward-row td{background:#eff6ff;color:#1e3a8a;font-weight:800}.graduation-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}.graduation-kpi-legend{display:flex;gap:8px;flex-wrap:wrap;margin:-2px 0 10px;color:#475569;font-size:11px}.graduation-kpi-legend span{display:inline-flex;align-items:center;gap:5px}.graduation-kpi-legend i{width:12px;height:12px;border-radius:3px}.graduation-kpi-legend .strong{background:#86efac}.graduation-kpi-legend .near{background:#fcd34d}.graduation-kpi-legend .low{background:#fca5a5}.graduation-status{margin-top:10px;padding:9px;border-radius:8px;background:#f1f5f9;color:#475569;font-size:12px;line-height:1.5}.graduation-status.ok{background:#ecfdf5;color:#065f46}.graduation-status.warn{background:#fffbeb;color:#92400e}.graduation-status.error{background:#fef2f2;color:#991b1b}
+.graduation-layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:16px;align-items:start}.graduation-config{position:sticky;top:calc(var(--bar-h) + 14px);max-height:calc(100vh - var(--bar-h) - 28px);overflow-y:auto;overscroll-behavior:contain;padding:2px 8px 14px 2px;margin:-2px 0 0 -2px;scrollbar-width:thin}.graduation-config input[type=file]{max-width:100%;font-size:12px}.graduation-course-list{display:grid;gap:8px;margin-top:12px}.graduation-course-row{display:grid;grid-template-columns:minmax(66px,1.1fr) minmax(68px,1.15fr) 74px 28px minmax(60px,.85fr);gap:5px;align-items:center}.graduation-course-row input,.graduation-course-row select{min-width:0;width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:7px;background:#fff;font:inherit;font-size:12px}.graduation-course-head{font-size:9px;color:var(--muted);font-weight:800}.graduation-course-code{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}.graduation-course-output{font-weight:700;color:#1e3a8a}.graduation-report-wrap{overflow:auto;border:1px solid var(--line);border-radius:9px;max-height:70vh}.graduation-report{border-collapse:collapse;min-width:100%;background:#fff;font-size:12px;table-layout:fixed}.graduation-report th{position:sticky;top:0;background:#246f83;color:#fff;text-align:center;text-transform:uppercase;font-size:10px;z-index:2}.graduation-report td,.graduation-report th{position:relative;padding:8px 11px 8px 9px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.graduation-report td.number{text-align:center;font-variant-numeric:tabular-nums}.graduation-report tr.candidate-start td{border-top:2px solid #94a3b8}.graduation-report tr.course-current td{font-weight:700}.graduation-report .student-action-col,.graduation-report .student-action-cell{min-width:65px}.graduation-report .student-report-btn{width:100%;min-width:0;padding:5px 4px;white-space:normal}.graduation-report tr.kpi-credits-strong td{background:var(--credits-kpi-strong,#dcfce7);color:#14532d}.graduation-report tr.kpi-credits-near td{background:var(--credits-kpi-near,#fef3c7);color:#78350f}.graduation-report tr.kpi-credits-low td{background:var(--credits-kpi-low,#fee2e2);color:#7f1d1d}.graduation-report .credits-status{display:inline-block;margin-left:5px;border-radius:999px;padding:2px 6px;font-size:9px;font-weight:800;background:#fff9}.graduation-report .course-tag{display:inline-block;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800;background:#f1f5f9;color:#475569}.graduation-report .course-tag.current{background:#dcfce7;color:#166534}.graduation-report .ward-row td{background:#eff6ff;color:#1e3a8a;font-weight:800}.graduation-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}.graduation-kpi-legend{display:flex;gap:8px;flex-wrap:wrap;margin:-2px 0 10px;color:#475569;font-size:11px}.graduation-kpi-legend span{display:inline-flex;align-items:center;gap:5px}.graduation-kpi-legend i{width:12px;height:12px;border-radius:3px}.graduation-kpi-legend .strong{background:#86efac}.graduation-kpi-legend .near{background:#fcd34d}.graduation-kpi-legend .low{background:#fca5a5}.graduation-status{margin-top:10px;padding:9px;border-radius:8px;background:#f1f5f9;color:#475569;font-size:12px;line-height:1.5}.graduation-status.ok{background:#ecfdf5;color:#065f46}.graduation-status.warn{background:#fffbeb;color:#92400e}.graduation-status.error{background:#fef2f2;color:#991b1b}
 .graduation-report td.center-from-period,.graduation-report th.center-from-period{text-align:center}.graduation-report .student-action-cell.center-from-period .student-report-btn{text-align:center}.graduation-report tr.candidate-start td{border-top:2px solid #94a3b8}.graduation-report tr.course-current td{font-weight:700}.graduation-report .student-action-col,.graduation-report .student-action-cell{min-width:65px}.graduation-report .student-report-btn{width:100%;min-width:0;padding:5px 4px;white-space:normal}.graduation-report tr.kpi-credits-strong td{background:var(--credits-kpi-strong,#dcfce7);color:#14532d}.graduation-report tr.kpi-credits-near td{background:var(--credits-kpi-near,#fef3c7);color:#78350f}.graduation-report tr.kpi-credits-low td{background:var(--credits-kpi-low,#fee2e2);color:#7f1d1d}.graduation-report .credits-status{display:inline-block;margin-left:5px;border-radius:999px;padding:2px 6px;font-size:9px;font-weight:800;background:#fff9}.graduation-report .course-tag{display:inline-block;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800;background:#f1f5f9;color:#475569}.graduation-report .course-tag.current{background:#dcfce7;color:#166534}.graduation-report .ward-row td{background:#eff6ff;color:#1e3a8a;font-weight:800}.graduation-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}.graduation-kpi-legend{display:flex;gap:8px;flex-wrap:wrap;margin:-2px 0 10px;color:#475569;font-size:11px}.graduation-kpi-legend span{display:inline-flex;align-items:center;gap:5px}.graduation-kpi-legend i{width:12px;height:12px;border-radius:3px}.graduation-kpi-legend .strong{background:#86efac}.graduation-kpi-legend .near{background:#fcd34d}.graduation-kpi-legend .low{background:#fca5a5}.graduation-status{margin-top:10px;padding:9px;border-radius:8px;background:#f1f5f9;color:#475569;font-size:12px;line-height:1.5}.graduation-status.ok{background:#ecfdf5;color:#065f46}.graduation-status.warn{background:#fffbeb;color:#92400e}.graduation-status.error{background:#fef2f2;color:#991b1b}
 .graduation-mapping{display:grid;grid-template-columns:minmax(78px,1fr) minmax(110px,1.4fr) 30px 56px 30px;gap:5px;align-items:center;margin-top:7px}.graduation-mapping input,.graduation-mapping select{min-width:0;width:100%;border:1px solid #cbd5e1;border-radius:7px;padding:6px;background:#fff;font:inherit;font-size:11px}.graduation-mapping .mapping-actions{display:flex;gap:2px}.graduation-mapping button{padding:4px 6px;font-size:11px}.graduation-mapping-head{display:grid;grid-template-columns:minmax(78px,1fr) minmax(110px,1.4fr) 30px 56px 30px;gap:5px;margin-top:10px;font-size:10px;color:var(--muted);font-weight:800}.graduation-col-resize{position:absolute;top:0;right:0;bottom:0;width:9px;cursor:col-resize;touch-action:none;user-select:none}.graduation-col-resize:hover,.graduation-col-resize.active{background:#bfdbfe99}
 .graduation-kpi-config{display:grid;gap:10px;margin-top:10px}.graduation-kpi-config .kpi-boundaries{grid-template-columns:1fr 1fr}.graduation-kpi-config .kpi-colors{grid-template-columns:repeat(3,minmax(0,1fr))}.graduation-credit-ranges{display:grid;gap:7px;margin-top:10px}.graduation-credit-range{display:grid;grid-template-columns:minmax(100px,1fr) repeat(2,minmax(65px,.7fr));gap:7px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:8px;background:#f8fafc;font-size:11px}.graduation-credit-range strong{color:#334155}.graduation-credit-range label{display:grid;gap:3px;color:var(--muted);font-size:10px}.graduation-credit-range input{width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:6px;padding:5px;font:inherit;color:var(--text)}.graduation-kpi-range-status{min-height:17px;color:#b91c1c;font-size:11px}.graduation-kpi-range-status.ok{color:#166534}
@@ -144,7 +180,7 @@ button.is-loading:disabled{cursor:progress}
 .bulletin-text-locked{border:1px dashed #cbd5e1;background:#f8fafc;border-radius:7px;padding:8px 10px;font-size:12px;color:var(--muted)}
 .student-report-btn{padding:5px 9px;background:#dbeafe;color:#1e40af;min-width:106px;white-space:nowrap}.student-action-col,.student-action-cell{width:122px;min-width:122px}.student-action-cell{overflow:visible}
 .student-bulletin{max-width:680px;padding:26px 28px;border:1px solid #d9e5f0;border-radius:18px;box-shadow:0 14px 36px #18324a12;font-family:Inter,"Segoe UI",Arial,sans-serif;color:#203047}.bulletin-brand{color:#153b67;font-size:31px;letter-spacing:5px;font-weight:900;text-shadow:none}.bulletin-program{text-align:center;margin:3px 0 13px;color:#168b8b;font-size:15px;font-weight:750;letter-spacing:.4px}.bulletin-org{border-top:1px solid #dce6ed;padding-top:9px;margin:0 0 15px;color:#607488;font-size:9px;letter-spacing:1.1px}.bulletin-title{color:#13836f;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:19px;letter-spacing:1.4px;margin:12px 0 4px}.bulletin-date{color:#50718b;font-size:11px;margin-bottom:14px}.bulletin-student{border:1px solid #cbdce7;background:linear-gradient(110deg,#f5fbfc,#f7f9ff);border-radius:11px;padding:13px 10px;font-size:23px;color:#214e68;margin-bottom:13px}.bulletin-meta,.bulletin-stats{border-collapse:separate;border-spacing:3px;table-layout:fixed}.bulletin-meta th,.bulletin-stats th{background:#246f83;color:#fff;font-size:10px;letter-spacing:.35px;padding:9px 5px}.bulletin-meta th:first-child,.bulletin-stats th:first-child{border-radius:7px 0 0 0}.bulletin-meta th:last-child,.bulletin-stats th:last-child{border-radius:0 7px 0 0}.bulletin-meta td,.bulletin-stats td{background:#f7fafc;border:1px solid #dbe5eb;border-radius:0 0 6px 6px;color:#263a50;font-size:12px;padding:9px 5px}.bulletin-course{background:#e9f4f5;border-left:4px solid #258398;border-radius:8px;color:#1d566a;text-align:left;font-size:17px;padding:12px 15px;margin-top:13px}.bulletin-stats{margin-top:3px}.bulletin-stats th{background:#2a7e91}.bulletin-stats td{background:#fff;font-size:18px;color:#183c55;padding:11px 4px;font-variant-numeric:tabular-nums}.bulletin-stats td:nth-child(3){color:#14836f}.bulletin-message{border:1px solid #c7deeb;border-left:4px solid #35a3a0;border-radius:10px;background:#f8fbfd;padding:15px 16px;margin-top:15px;color:#334b60;font-size:11px;line-height:1.65}.bulletin-message p{margin:0 0 8px}.bulletin-message b u{color:#176e78;text-decoration-color:#84c5c2;text-underline-offset:2px}.bulletin-signature{border-top:1px solid #e1eaf0;margin:18px 0 0;padding:12px 4px 0;color:#426a82;font-size:11px;line-height:1.7}.bulletin-signature b{color:#183d59}
-@media(max-width:1050px){.grid{grid-template-columns:1fr}.grid>.left{position:static;max-height:none;overflow:visible;padding-right:0}.graduation-layout{grid-template-columns:1fr}.graduation-config{position:static;max-height:none;overflow:visible;padding-right:0}}@media(max-width:650px){.graduation-course-row{grid-template-columns:1fr 1fr}.graduation-course-head{display:none}.graduation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,1fr)}.mapping,.head{grid-template-columns:1fr}.rules,.report-details,.program-config{grid-template-columns:1fr}.bulletin-brand{font-size:28px}.bulletin-title{font-size:16px}}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}.grid>.left{position:static;max-height:none;overflow:visible;padding:0;margin:0}.graduation-layout{grid-template-columns:1fr}.graduation-config{position:static;max-height:none;overflow:visible;padding:0;margin:0}}@media(max-width:650px){.graduation-course-row{grid-template-columns:1fr 1fr}.graduation-course-head{display:none}.graduation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,1fr)}.mapping,.head{grid-template-columns:1fr}.rules,.report-details,.program-config{grid-template-columns:1fr}.bulletin-brand{font-size:28px}.bulletin-title{font-size:16px}}
 @media print{@page{size:portrait;margin:12mm}body.print-report *{visibility:hidden!important}body.print-report .export-print-target,body.print-report .export-print-target *{visibility:visible!important}body.print-report .export-print-target{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;border:0;box-shadow:none}.export-print-target .card-head,.export-print-target .kpis,.export-print-target .report-details,.export-print-target .graduation-summary,.export-print-target .actions{display:none!important}.export-print-target .card-body{display:block!important}.export-print-target .scroll,.export-print-target .graduation-report-wrap{overflow:visible!important;max-height:none!important;border:0}.export-print-target table{width:100%!important;table-layout:fixed!important;font-size:9px}.export-print-target th,.export-print-target td{white-space:normal;overflow-wrap:anywhere;word-break:normal;overflow:visible;text-overflow:clip;padding:4px 3px}.export-print-target .col-resize,.export-print-target .student-action-col,.export-print-target .student-action-cell{display:none!important}}
 @media print{@page graduation-report{size:landscape;margin:8mm}.graduation-print{page:graduation-report}.graduation-report{font-size:7px!important}.graduation-report th,.graduation-report td{padding:4px 3px}}
 @media print{@page candidate-bulletin{size:landscape;margin:8mm}.candidate-bulletin-print{page:candidate-bulletin}.candidate-bulletin-print .graduation-bulletin{max-width:none!important;width:100%!important;border:0!important;box-shadow:none!important}.candidate-bulletin-print .graduation-bulletin-content{grid-template-columns:minmax(0,2.2fr) minmax(180px,1fr)}.graduation-col-resize{display:none!important}}
@@ -208,24 +244,149 @@ button.is-loading:disabled{cursor:progress}
 .bulletin-year{flex:none;min-width:140px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:#f7fafc;border:1px solid #dbe5eb;border-radius:0 8px 8px 0;overflow:hidden}
 .bulletin-year span{align-self:stretch;background:#246f83;color:#fff;font-size:9px;letter-spacing:.35px;font-weight:700;padding:5px 6px}
 .bulletin-year b{color:#263a50;font-size:15px;padding:5px 8px}
+/*
+ * ===================================================================================
+ * Capa de interfaz: solo la apariencia en pantalla y ayudas de uso.
+ * No cambia lo que se exporta (tabla final en JPEG/PDF, boletines individuales, ZIP ni
+ * Excel): esas reglas están arriba y aquí no se tocan.
+ * ===================================================================================
+ */
+/* Íconos de línea: máscara SVG que toma el color del texto del botón. */
+.ico{display:inline-block;flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat}
+.ico-zap{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 2 3 14h9l-1 8 10-12h-9z'/%3E%3C/svg%3E")}
+.ico-trash{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'/%3E%3C/svg%3E")}
+.ico-save{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'/%3E%3Cpath d='M17 21v-8H7v8M7 3v5h8'/%3E%3C/svg%3E")}
+.ico-upload{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12'/%3E%3C/svg%3E")}
+.ico-download{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3'/%3E%3C/svg%3E")}
+.ico-image{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='m21 15-5-5L5 21'/%3E%3C/svg%3E")}
+.ico-print{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'/%3E%3Crect x='6' y='14' width='12' height='8'/%3E%3C/svg%3E")}
+.ico-archive{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 8v13H3V8M1 3h22v5H1zM10 12h4'/%3E%3C/svg%3E")}
+.ico-sheet{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6M8 13h8M8 17h8M12 11v8'/%3E%3C/svg%3E")}
+.ico-chevron{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")}
+.ico-left{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E")}
+.ico-right{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E")}
+.ico-plus{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E")}
+.ico-refresh{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M23 4v6h-6M20.49 15a9 9 0 1 1-2.12-9.36L23 10'/%3E%3C/svg%3E")}
+.ico-check{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")}
+.ico-x{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E")}
+.ico-alert{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01'/%3E%3C/svg%3E")}
+.ico-info{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4M12 8h.01'/%3E%3C/svg%3E")}
+.ico-down{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M19 12l-7 7-7-7'/%3E%3C/svg%3E")}
+.ico-book{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/%3E%3C/svg%3E")}
+.ico-book-open{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/%3E%3C/svg%3E")}
+.ico-cap{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 10 12 5 2 10l10 5 10-5zM6 12v5c3 2 9 2 12 0v-5M22 10v6'/%3E%3C/svg%3E")}
+/* Campos: foco visible y casillas con el color principal. */
+input[type=checkbox],input[type=radio]{accent-color:var(--blue)}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue);box-shadow:var(--ring)}
+input[type=checkbox]:focus,input[type=radio]:focus,input[type=color]:focus,input[type=file]:focus{box-shadow:none}
+input[type=checkbox]:focus-visible,input[type=radio]:focus-visible,input[type=color]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+select{cursor:pointer}input:disabled,select:disabled{cursor:not-allowed}
+
+/*
+ * Campos clave del boletín (Estacas, Maestro, Barrio / Curso) y «Fecha del reporte».
+ * Siguen resaltados como antes, pero ahora el resaltado indica si falta el dato:
+ * vacío = granate (anaranjado la fecha); con dato = franja verde azulada, sin alarma.
+ */
+.card input.hl-red,.card select.hl-red,.card input.hl-orange{border:1px solid #b9cad5;box-shadow:inset 4px 0 0 var(--blue);padding-left:13px;background-color:#fff}
+.card input.hl-red.is-empty,.card select.hl-red.is-empty{border-color:#d9a5b3;box-shadow:inset 4px 0 0 var(--brand);background-color:#fff8f9}
+.card input.hl-orange.is-empty{border-color:#efc58a;box-shadow:inset 4px 0 0 var(--orange);background-color:#fffaf2}
+.card input.hl-red.is-empty::placeholder{color:#a35a6e}
+.card input.hl-red:focus,.card select.hl-red:focus,.card input.hl-orange:focus{outline:0;border-color:var(--blue);box-shadow:inset 4px 0 0 var(--blue),var(--ring)}
+.card input.hl-red.is-empty:focus,.card select.hl-red.is-empty:focus{box-shadow:inset 4px 0 0 var(--brand),var(--ring)}
+.card input.hl-orange.is-empty:focus{box-shadow:inset 4px 0 0 var(--orange),var(--ring)}
+/* Sección «Programa de …»: acento granate (el color del boletín) en lugar del borde rojo de error. */
+.card.card-highlight{border:1px solid #e6c4ce;border-left:5px solid var(--brand);box-shadow:var(--shadow)}
+.program-config label.span-2{grid-column:1/-1}
+
+/* Columna izquierda (más angosta): botones un poco más compactos para que cada fila de acciones quepa en una línea. */
+.grid>.left .actions>button{padding-left:12px;padding-right:12px}
+/* Botón ocupado («Generando…») mientras se arma una imagen: sin atenuar y con el ícono girando en el color del texto. */
+button[aria-busy="true"]:disabled{opacity:1;cursor:progress}
+button:not(.primary):not(.green) .zip-spinner{border-color:#1f344733;border-top-color:#1f3447}
+/* Botones de «siguiente paso» que aparecen después de «Analizar / ordenar». */
+.next-steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.next-steps[hidden]{display:none}.next-steps button{padding:7px 12px;font-size:12.5px}
+
+/* Indicadores (alumnos, deben compensar, aprueban…). */
+.kpi{border-radius:11px;background:#fbfcfd;border-top:3px solid var(--blue)}
+.kpis .kpi:nth-child(2){border-top-color:#f59e0b}.kpis .kpi:nth-child(3){border-top-color:#10b981}
+.graduation-summary .kpi:nth-child(3){border-top-color:#f59e0b}.graduation-summary .kpi:nth-child(4){border-top-color:#10b981}
+.kpi b{font-size:22px;line-height:1.2;color:#0f3347}.kpi span{font-weight:700;letter-spacing:.4px}
+
+/* Recuadros de ayuda y avisos con los colores de la paleta. */
+.detect{background:#eef6f8;border-radius:10px;color:#28465a}
+.pf-toggle{border-color:#b8d9e1;background:#eef6f8;color:#174c5c}
+.pf-note{background:#eef6f8;color:#174c5c}
+.graduation-status{padding:10px 12px;border-radius:10px;border-left:4px solid #b6c3d0}.graduation-status.ok{border-left-color:#10b981}.graduation-status.warn{border-left-color:#f59e0b}.graduation-status.error{border-left-color:#ef4444}
+.graduation-drop{border-radius:12px}
+
+/* Tablas en pantalla: fila resaltada al pasar el mouse (no sale en lo exportado). */
+.final-table tbody tr:hover td,.graduation-report tbody tr:hover td{box-shadow:inset 0 0 0 999px #246f8314}
+.final-table th:hover .col-resize{background:#ffffff40}
+/* Solo en pantalla (la impresión queda exactamente como antes): tablas más altas y secciones que no quedan bajo la barra al saltar a ellas. */
+@media screen{.scroll{max-height:max(460px,calc(100vh - 260px));scrollbar-width:thin}.card{scroll-margin-top:calc(var(--bar-h) + 14px)}}
+
+/* Estados vacíos. */
+.empty{padding:26px 16px;border:1px dashed #c9d6df;border-radius:12px;background:#fafcfd;line-height:1.5}
+.scroll>.empty,.graduation-report-wrap>.empty,.pf-holidays>.empty{border:0;background:transparent}
+.empty.rich{display:grid;justify-items:center;gap:4px;padding:34px 18px}
+.empty.rich::before{content:"";width:36px;height:36px;margin-bottom:6px;background:#a9c2cc;--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Cpath d='M3 9h18M3 15h18M9 3v18'/%3E%3C/svg%3E");-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat}
+.empty.rich b{color:#2f5265;font-size:14px}.empty.rich span{font-size:12px;max-width:46ch}
+
+/* Ventanas emergentes. */
+.modal{background:#0b2536b3;backdrop-filter:blur(2px);overscroll-behavior:contain}
+.modal-box{border-radius:16px;box-shadow:0 24px 70px #0b253666;overscroll-behavior:contain}
+.modal-box:focus{outline:0}
+.modal.open .modal-box{animation:modal-in .2s ease-out}
+@keyframes modal-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.modal-close{width:34px;height:34px;padding:0;border-radius:50%;font-size:22px;line-height:1;background:#eef2f6;color:#334155}.modal-close:hover{background:#e1e8ee}
+.stakes-box h2,.coords-box h2{font-size:17px;color:#0f3347}
+/* «Anterior / Siguiente» para revisar los boletines uno tras otro sin cerrar la ventana. */
+.student-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 44px 12px}
+.student-nav[hidden]{display:none}
+.student-nav .student-pos{min-width:130px;text-align:center;font-size:12.5px;font-weight:700;color:#475569;white-space:nowrap}
+.student-nav button{padding:7px 12px;font-size:12.5px}
+
+/* Avisos flotantes (confirmaciones breves que no dependen de dónde esté el cuadro de estado). */
+.toasts{position:fixed;right:20px;bottom:20px;z-index:1200;display:grid;gap:8px;justify-items:end;width:min(440px,calc(100vw - 24px));pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:flex-start;gap:10px;max-width:100%;padding:11px 10px 11px 14px;border-radius:12px;background:#0f2f42;color:#fff;font-size:13px;line-height:1.45;box-shadow:0 14px 34px #0b253659;animation:toast-in .22s ease-out both}
+.toast>.ico{margin-top:1px;width:17px;height:17px}.toast.ok>.ico{color:#6ee7b7}.toast.warn>.ico{color:#fcd34d}.toast.error>.ico{color:#fca5a5}
+.toast>span{flex:1;min-width:0}
+.toast>button{flex:none;width:24px;height:24px;padding:0;border-radius:7px;background:transparent;color:#ffffffb3}.toast>button:hover{background:#ffffff1f;color:#fff}
+.toast.leaving{animation:toast-out .18s ease-in both}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes toast-out{to{opacity:0;transform:translateY(6px)}}
+
+/* Celulares y ventanas angostas. */
+.tab-short{display:none}
+@media(max-width:820px){.top{padding:0 12px}.top p{display:none}.tabs{width:100%}.tab{flex:1 0 auto;justify-content:center;padding:9px 12px}.toasts{right:auto;left:50%;transform:translateX(-50%);justify-items:center}}
+@media(max-width:520px){.top h1 small{display:none}.tab{font-size:12.5px;padding:8px 10px;gap:6px}.tab>.ico{display:none}.tab-full{display:none}.tab-short{display:inline}.wrap{padding:12px}.toasts{bottom:10px}.student-nav{margin:0 40px 10px;gap:6px}.student-nav .student-pos{min-width:0}.student-nav .nav-label{display:none}.student-nav button{padding:7px 10px}}
+@media(prefers-reduced-motion:reduce){.toast,.toast.leaving,.modal.open .modal-box{animation:none}.collapse-btn .ico,button,.tab,.paste{transition:none}}
+@media print{.modal{backdrop-filter:none}}
 </style>
 </head>
 <body>
-<header class="top"><h1>Boletines: Fuente Wise2</h1><p>Un mismo origen puede cambiar de posición; cada pestaña tiene su propia estructura de salida.</p></header>
-<div class="wrap">
-  <div class="tabs">
-    <button class="tab active" data-tab="seminarios">📘 Seminarios</button>
-    <button class="tab" data-tab="institutos">📗 Institutos</button>
-    <button class="tab" data-tab="graduacion">🎓 Candidatos a graduación</button>
+<header class="top" id="app-bar">
+ <div class="top-inner">
+  <div class="brand">
+   <span class="brand-mark" aria-hidden="true"><i class="ico ico-book-open"></i></span>
+   <div class="brand-text"><h1>Boletines <small>· Fuente Wise2</small></h1><p>Convierte lo que copias de Wise2 en la tabla final y en boletines individuales.</p></div>
   </div>
-
-  <section id="seminarios" class="page active"></section>
-  <section id="institutos" class="page"></section>
-  <section id="graduacion" class="page">
+  <nav class="tabs" role="tablist" aria-label="Tipo de informe">
+    <button class="tab active" type="button" role="tab" id="tab-seminarios" data-tab="seminarios" aria-controls="seminarios" aria-selected="true"><i class="ico ico-book"></i>Seminarios<span class="tab-count" id="tab-count-seminarios" hidden></span></button>
+    <button class="tab" type="button" role="tab" id="tab-institutos" data-tab="institutos" aria-controls="institutos" aria-selected="false" tabindex="-1"><i class="ico ico-book-open"></i>Institutos<span class="tab-count" id="tab-count-institutos" hidden></span></button>
+    <button class="tab" type="button" role="tab" id="tab-graduacion" data-tab="graduacion" aria-controls="graduacion" aria-selected="false" tabindex="-1"><i class="ico ico-cap"></i><span class="tab-full">Candidatos a graduación</span><span class="tab-short">Graduación</span><span class="tab-count" id="tab-count-graduacion" hidden></span></button>
+  </nav>
+ </div>
+</header>
+<div class="wrap">
+  <section id="seminarios" class="page active" role="tabpanel" aria-labelledby="tab-seminarios"></section>
+  <section id="institutos" class="page" role="tabpanel" aria-labelledby="tab-institutos"></section>
+  <section id="graduacion" class="page" role="tabpanel" aria-labelledby="tab-graduacion">
     <div class="graduation-layout">
       <div class="graduation-config">
         <div class="card">
-          <h2>Datos del informe</h2>
+          <div class="card-head"><h2><span>Datos del informe</span></h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="graduation-data-body" aria-label="Mostrar u ocultar la sección" title="Ocultar sección" onclick="toggleCard(this,'graduation-data-body')"><i class="ico ico-chevron"></i></button></div>
+          <div class="card-body" id="graduation-data-body">
           <div class="muted">Carga el Excel de recuperación para reunir los alumnos y períodos de todas sus hojas en un solo informe compartible. DTMU es la cantidad de compensaciones pendientes de ese período; por ejemplo, 19 en 2023 — Término 2 significa 19 compensaciones de ese período. El archivo se lee localmente en este navegador.</div>
           <div style="margin-top:12px;font-weight:700">Archivo Excel</div>
           <div id="graduation-drop" class="graduation-drop" role="button" tabindex="0" aria-label="Elegir o arrastrar el archivo Excel">
@@ -237,21 +398,25 @@ button.is-loading:disabled{cursor:progress}
           </div>
           <div class="graduation-open-saved">
             <div><b>Abrir un informe guardado</b><span>El Excel que descargaste con «Descargar Excel» vuelve a mostrarse tal como lo dejaste. También puedes arrastrarlo al recuadro de arriba.</span></div>
-            <button type="button" onclick="$('graduation-file').click()">Abrir informe guardado</button>
+            <button type="button" onclick="$('graduation-file').click()"><i class="ico ico-sheet"></i>Abrir informe guardado</button>
           </div>
           <label style="display:grid;gap:6px;margin-top:12px;font-weight:700">Actualizar desde Wise2<textarea id="graduation-wise2-paste" class="graduation-wise2-paste" rows="4" placeholder="Pega aquí el texto copiado del alumno en Wise2"></textarea></label>
-          <div class="actions"><button class="green" type="button" onclick="addGraduationWise2Data()">Agregar / actualizar con Wise2</button><button type="button" onclick="clearGraduationWise2Paste()">Limpiar texto</button><button type="button" class="danger" onclick="clearGraduationReport()">Vaciar informe</button></div>
+          <div class="actions"><button class="green" type="button" onclick="addGraduationWise2Data()"><i class="ico ico-plus"></i>Agregar / actualizar con Wise2</button><button type="button" onclick="clearGraduationWise2Paste()">Limpiar texto</button><button type="button" class="danger" onclick="clearGraduationReport()"><i class="ico ico-trash"></i>Vaciar informe</button></div>
           <div id="graduation-wise2-status" class="graduation-status" aria-live="polite">No necesitas un Excel: cada vez que pegas el texto de un joven copiado de Wise2 se agrega al informe, debajo de los anteriores. Si el joven ya está (en el Excel o pegado antes), Wise2 reemplaza sus datos y agrega los períodos que falten.</div>
-          <div id="graduation-status" class="graduation-status">Selecciona el informe Excel para comenzar.</div>
+          <div id="graduation-status" class="graduation-status" role="status" aria-live="polite">Selecciona el informe Excel para comenzar.</div>
+          </div>
         </div>
         <div class="card">
-          <h2>Cursos por período</h2>
+          <div class="card-head"><h2><span>Cursos por período</span></h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="graduation-courses-body" aria-label="Mostrar u ocultar la sección" title="Ocultar sección" onclick="toggleCard(this,'graduation-courses-body')"><i class="ico ico-chevron"></i></button></div>
+          <div class="card-body" id="graduation-courses-body">
           <div class="muted">Revisa el curso asociado a cada año/período y marca cuál es el actual. El código de salida reemplaza al código original en la columna "Curso" de la tabla final. Los cambios se guardan en este navegador.</div>
           <div class="graduation-course-row graduation-course-head"><span>Año / período</span><span>Nombre completo</span><span>Tipo</span><span title="Código original del Excel">Original</span><span>Código salida</span></div>
           <div id="graduation-courses" class="graduation-course-list"><div class="empty">Carga un Excel para detectar los períodos.</div></div>
+          </div>
         </div>
         <div class="card">
-          <h2>KPI de créditos para graduación</h2>
+          <div class="card-head"><h2><span>KPI de créditos para graduación</span></h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="graduation-kpi-body" aria-label="Mostrar u ocultar la sección" title="Ocultar sección" onclick="toggleCard(this,'graduation-kpi-body')"><i class="ico ico-chevron"></i></button></div>
+          <div class="card-body" id="graduation-kpi-body">
           <div class="muted">Define los rangos consecutivos para cada color, en pasos de 0,5 créditos. El rango puede empezar en 0 o 0,5 y termina en 4; valores inferiores al inicio elegido no se sombrean. El estado junto al crédito proyecta la graduación con este ciclo: 2024 Libro de Mormón, 2025 Doctrina y Convenios, 2026 Antiguo Testamento, 2027 Nuevo Testamento; luego se repite. Solo se considera «Para el próximo año» si el libro pendiente es precisamente el que corresponde el próximo año.</div>
           <div class="graduation-credit-ranges">
             <div class="graduation-credit-range"><strong>Requiere créditos</strong><label>Desde<input id="graduation-kpi-low-min" type="number" min="0" max="4" step="0.5"></label><label>Hasta<input id="graduation-kpi-low-max" type="number" min="0" max="4" step="0.5"></label></div>
@@ -273,44 +438,49 @@ button.is-loading:disabled{cursor:progress}
               </div>
             </div>
           </div>
+          </div>
         </div>
         <div class="card">
-          <h2>3. Salida / confección de la tabla final</h2>
+          <div class="card-head"><h2><span class="step">3</span><span>Salida / confección de la tabla final</span></h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="graduation-output-body" aria-label="Mostrar u ocultar la sección" title="Ocultar sección" onclick="toggleCard(this,'graduation-output-body')"><i class="ico ico-chevron"></i></button></div>
+          <div class="card-body" id="graduation-output-body">
           <div class="muted">Personaliza las columnas del informe: cambia sus nombres, elige qué datos mostrar y el orden. Esta configuración se guarda en este navegador.</div>
           <div class="graduation-mapping-head"><span>Encabezado</span><span>Dato de origen</span><span>Ver</span><span>Orden</span><span></span></div>
           <div id="graduation-mapping"></div>
           <div class="actions">
             <button onclick="addGraduationField()">+ Campo</button>
-            <button class="green" onclick="saveGraduationFieldConfig(true)">Guardar configuración</button>
+            <button class="green" onclick="saveGraduationFieldConfig(true)"><i class="ico ico-save"></i>Guardar configuración</button>
             <button onclick="resetGraduationFieldConfig()">Restablecer</button>
+          </div>
           </div>
         </div>
       </div>
       <div class="graduation-report-column">
         <div class="card" id="graduation-report-card">
-          <div class="card-head"><h2>4. Tabla final de candidatos a graduación</h2></div>
+          <div class="card-head"><h2><span class="step">4</span><span>Tabla final de candidatos a graduación</span></h2></div>
           <div class="actions" style="margin:0 0 4px">
-            <button onclick="downloadGraduationJPEG()">🖼 Descargar JPEG</button>
-            <button onclick="printGraduationReport()">Imprimir / PDF</button>
-            <button class="green" id="graduation-zip-btn" onclick="downloadAllGraduationBulletins()">Descargar boletines individuales en ZIP</button>
-            <button onclick="downloadGraduationExcel()" title="Hoja «Informe» con la tabla final y hoja «Respaldo» para volver a abrirlo aquí">Descargar Excel</button>
+            <button id="graduation-jpeg-btn" onclick="downloadGraduationJPEG()"><i class="ico ico-image"></i>Descargar JPEG</button>
+            <button onclick="printGraduationReport()"><i class="ico ico-print"></i>Imprimir / PDF</button>
+            <button class="green" id="graduation-zip-btn" onclick="downloadAllGraduationBulletins()"><i class="ico ico-archive"></i>Descargar boletines individuales en ZIP</button>
+            <button onclick="downloadGraduationExcel()" title="Hoja «Informe» con la tabla final y hoja «Respaldo» para volver a abrirlo aquí"><i class="ico ico-sheet"></i>Descargar Excel</button>
             <button onclick="resetGraduationColumnWidths()">Restablecer anchos</button>
           </div>
           <div id="graduation-summary" class="graduation-summary"></div>
           <div id="graduation-kpi-legend" class="graduation-kpi-legend"></div>
           <div id="graduation-export-heading" class="export-heading" style="display:none"></div>
           <div class="muted" style="margin:0 0 7px;font-size:11px">Arrastra el borde derecho de un encabezado para ajustar el ancho; se guarda en este navegador.</div>
-          <div id="graduation-report" class="graduation-report-wrap"><div class="empty">Carga un Excel o pega el texto de un joven desde Wise2 para generar el informe.</div></div>
+          <div id="graduation-report" class="graduation-report-wrap"><div class="empty rich"><b>Aún no hay candidatos</b><span>Carga un Excel o pega el texto de un joven desde Wise2 para generar el informe.</span></div></div>
         </div>
       </div>
     </div>
   </section>
 </div>
-<div id="stakes-modal" class="modal" onclick="if(event.target===this)closeStakesModal()"><div class="modal-box stakes-box"><button class="modal-close" onclick="closeStakesModal()">×</button><h2>Estacas</h2><div class="muted">Estas estacas aparecen en el desplegable "Estacas Asignadas" de Seminarios e Institutos. Los cambios se guardan en este navegador.</div><div id="stakes-list" class="stakes-list"></div><div class="actions"><button onclick="addStake()">+ Agregar estaca</button><button class="primary" onclick="closeStakesModal()">Listo</button></div></div></div>
-<div id="programs-modal" class="modal" onclick="if(event.target===this)closeProgramsModal()"><div class="modal-box stakes-box"><button class="modal-close" onclick="closeProgramsModal()">×</button><h2>Programas</h2><div class="muted">Estos programas aparecen en el desplegable "Nombre del Programa" de Seminarios e Institutos. Los cambios se guardan en este navegador.</div><div id="programs-list" class="stakes-list"></div><div class="actions"><button onclick="addProgram()">+ Agregar programa</button></div><div id="program-stakes" class="program-stakes"></div><div class="actions"><button class="primary" onclick="closeProgramsModal()">Listo</button></div></div></div>
-<div id="coordinators-modal" class="modal" onclick="if(event.target===this)closeCoordinatorsModal()"><div class="modal-box coords-box"><button class="modal-close" onclick="closeCoordinatorsModal()">×</button><h2>Coordinadores</h2><div class="muted">Cada coordinador con su número y los programas a su cargo. Aparecen en el desplegable "Coordinador" de Seminarios e Institutos; al elegir uno, su número se llena solo. Los cambios se guardan en este navegador.</div><div id="coordinators-list" class="stakes-list"></div><div class="actions"><button onclick="addCoordinator()">+ Agregar coordinador</button></div><div id="coordinator-programs" class="program-stakes"></div><div class="actions"><button class="primary" onclick="closeCoordinatorsModal()">Listo</button></div></div></div>
-<div id="wards-modal" class="modal" onclick="if(event.target===this)closeWardsModal()"><div class="modal-box stakes-box"><button class="modal-close" onclick="closeWardsModal()">×</button><h2 class="wards-head">Barrios de la estaca <select id="wards-stake" onchange="onWardsModalStakeChange()"></select></h2><div class="muted">Estos barrios aparecen en el desplegable "Barrio" de Seminarios cuando esta estaca está elegida en "Estacas Asignadas". Los cambios se guardan en este navegador.</div><div id="wards-list" class="stakes-list"></div><div class="actions"><button id="wards-add" onclick="addWard()">+ Agregar barrio</button><button class="primary" onclick="closeWardsModal()">Listo</button></div></div></div>
-<div id="student-modal" class="modal" onclick="if(event.target===this)closeStudentReport()"><div class="modal-box"><button class="modal-close" onclick="closeStudentReport()">×</button><div id="student-modal-content"></div><div class="actions" style="justify-content:center"><button id="class-bulletin-download" class="primary" onclick="downloadStudentJPEG()">Descargar boletín JPEG</button><button id="graduation-bulletin-download" class="primary" style="display:none" onclick="downloadGraduationStudentJPEG()">Descargar boletín JPEG</button><button id="graduation-bulletin-print" style="display:none" onclick="printGraduationStudent()">Imprimir / PDF</button></div></div></div>
+<div id="stakes-modal" class="modal" aria-labelledby="stakes-title" onclick="if(event.target===this)closeStakesModal()"><div class="modal-box stakes-box"><button type="button" class="modal-close" aria-label="Cerrar" title="Cerrar (Esc)" onclick="closeStakesModal()">×</button><h2 id="stakes-title">Estacas</h2><div class="muted">Estas estacas aparecen en el desplegable "Estacas Asignadas" de Seminarios e Institutos. Los cambios se guardan en este navegador.</div><div id="stakes-list" class="stakes-list"></div><div class="actions"><button onclick="addStake()">+ Agregar estaca</button><button class="primary" onclick="closeStakesModal()">Listo</button></div></div></div>
+<div id="programs-modal" class="modal" aria-labelledby="programs-title" onclick="if(event.target===this)closeProgramsModal()"><div class="modal-box stakes-box"><button type="button" class="modal-close" aria-label="Cerrar" title="Cerrar (Esc)" onclick="closeProgramsModal()">×</button><h2 id="programs-title">Programas</h2><div class="muted">Estos programas aparecen en el desplegable "Nombre del Programa" de Seminarios e Institutos. Los cambios se guardan en este navegador.</div><div id="programs-list" class="stakes-list"></div><div class="actions"><button onclick="addProgram()">+ Agregar programa</button></div><div id="program-stakes" class="program-stakes"></div><div class="actions"><button class="primary" onclick="closeProgramsModal()">Listo</button></div></div></div>
+<div id="coordinators-modal" class="modal" aria-labelledby="coordinators-title" onclick="if(event.target===this)closeCoordinatorsModal()"><div class="modal-box coords-box"><button type="button" class="modal-close" aria-label="Cerrar" title="Cerrar (Esc)" onclick="closeCoordinatorsModal()">×</button><h2 id="coordinators-title">Coordinadores</h2><div class="muted">Cada coordinador con su número y los programas a su cargo. Aparecen en el desplegable "Coordinador" de Seminarios e Institutos; al elegir uno, su número se llena solo. Los cambios se guardan en este navegador.</div><div id="coordinators-list" class="stakes-list"></div><div class="actions"><button onclick="addCoordinator()">+ Agregar coordinador</button></div><div id="coordinator-programs" class="program-stakes"></div><div class="actions"><button class="primary" onclick="closeCoordinatorsModal()">Listo</button></div></div></div>
+<div id="wards-modal" class="modal" aria-labelledby="wards-title" onclick="if(event.target===this)closeWardsModal()"><div class="modal-box stakes-box"><button type="button" class="modal-close" aria-label="Cerrar" title="Cerrar (Esc)" onclick="closeWardsModal()">×</button><h2 class="wards-head" id="wards-title">Barrios de la estaca <select id="wards-stake" onchange="onWardsModalStakeChange()"></select></h2><div class="muted">Estos barrios aparecen en el desplegable "Barrio" de Seminarios cuando esta estaca está elegida en "Estacas Asignadas". Los cambios se guardan en este navegador.</div><div id="wards-list" class="stakes-list"></div><div class="actions"><button id="wards-add" onclick="addWard()">+ Agregar barrio</button><button class="primary" onclick="closeWardsModal()">Listo</button></div></div></div>
+<div id="student-modal" class="modal" aria-label="Boletín del alumno" onclick="if(event.target===this)closeStudentReport()"><div class="modal-box"><button type="button" class="modal-close" aria-label="Cerrar" title="Cerrar (Esc)" onclick="closeStudentReport()">×</button><div id="student-nav" class="student-nav" hidden><button type="button" id="student-prev" onclick="studentStep(-1)" aria-label="Boletín anterior" title="Boletín anterior (←)"><i class="ico ico-left"></i><span class="nav-label">Anterior</span></button><span id="student-pos" class="student-pos" aria-live="polite"></span><button type="button" id="student-next" onclick="studentStep(1)" aria-label="Boletín siguiente" title="Boletín siguiente (→)"><span class="nav-label">Siguiente</span><i class="ico ico-right"></i></button></div><div id="student-modal-content"></div><div class="actions" style="justify-content:center"><button id="class-bulletin-download" class="primary" onclick="downloadStudentJPEG()"><i class="ico ico-download"></i>Descargar boletín JPEG</button><button id="graduation-bulletin-download" class="primary" style="display:none" onclick="downloadGraduationStudentJPEG()"><i class="ico ico-download"></i>Descargar boletín JPEG</button><button id="graduation-bulletin-print" style="display:none" onclick="printGraduationStudent()"><i class="ico ico-print"></i>Imprimir / PDF</button></div></div></div>
+<!-- Avisos flotantes (ver toast()). Solo visuales: los recuadros de estado ya anuncian el mensaje a los lectores de pantalla. -->
+<div id="toasts" class="toasts"></div>
 
 <script>
 /*
@@ -777,12 +947,15 @@ function norm(v){return String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/
 function clean(v){return String(v??"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim()}
 function esc(v){return String(v??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 
-// title: título de la sección. bodyId: id único para el contenido colapsable. extraClass: clases extra del <div class="card">.
+// title: título de la sección ("1. Pegar datos…" muestra el número en una insignia). bodyId: id único para el contenido colapsable. extraClass: clases extra del <div class="card">.
 function cardOpen(title,bodyId,extraClass=""){
+ let m=String(title).match(/^(\d+)\.\s*([\s\S]*)$/),heading=m?`<span class="step">${m[1]}</span><span>${m[2]}</span>`:`<span>${title}</span>`;
  return `<div class="card ${extraClass}">
-  <div class="card-head"><h2>${title}</h2><button type="button" class="collapse-btn" title="Ocultar sección" onclick="toggleCard(this,'${bodyId}')">−</button></div>
+  <div class="card-head"><h2>${heading}</h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="${bodyId}" aria-label="Mostrar u ocultar la sección" title="Ocultar sección" onclick="toggleCard(this,'${bodyId}')"><i class="ico ico-chevron"></i></button></div>
   <div class="card-body" id="${bodyId}">`;
 }
+// Estado vacío con ícono, un título corto y la pista del siguiente paso.
+function emptyState(title,hint=""){return `<div class="empty rich"><b>${esc(title)}</b>${hint?`<span>${esc(hint)}</span>`:""}</div>`}
 const cardClose="</div></div>";
 // Ícono "+" de línea fina para los botones que abren las ventanas de Coordinadores, Programas, Estacas y Barrios.
 const ADD_ICON=`<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>`;
@@ -791,9 +964,10 @@ function pageHTML(key){
  <div class="left">
    ${cardOpen(`1. Pegar datos de ${state[key].title}`, key+"-b1")}
     <div class="muted">Copia la tabla directamente de la página. El sistema intentará detectar encabezados aunque se hayan movido y conservará las columnas vacías necesarias.</div>
-    <div id="${key}-paste" class="paste" contenteditable="true"></div>
-    <div class="actions"><button class="primary" onclick="process('${key}')">Analizar / ordenar</button><button onclick="loadExample('${key}')">Ver ejemplo</button><button class="danger" onclick="clearPage('${key}')">Limpiar</button></div>
-    <div id="${key}-status" class="status">Esperando datos…</div>
+    <div id="${key}-paste" class="paste" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Pega aquí la tabla copiada de Wise2"></div>
+    <div class="actions"><button class="primary" onclick="process('${key}')"><i class="ico ico-zap"></i>Analizar / ordenar</button><button onclick="loadExample('${key}')">Ver ejemplo</button><button class="danger" onclick="clearPage('${key}')">Limpiar</button></div>
+    <div id="${key}-status" class="status" role="status" aria-live="polite">Esperando datos…</div>
+    <div id="${key}-next" class="next-steps" hidden></div>
    ${cardClose}
    ${cardOpen("Configuración de esta pestaña", key+"-b2")}
     <div class="muted">Seminarios e Institutos son independientes. Puedes configurar una vez cada estructura y luego reutilizarla.</div>
@@ -804,11 +978,11 @@ function pageHTML(key){
     <div class="program-config" data-tab="${key}">
      <label>Nombre del Programa:<span class="stake-pick"><select id="${key}-program" onchange="onProgramChange('${key}')"></select><button type="button" class="stake-add" title="Agregar o editar programas y sus estacas" onclick="openProgramsModal('${key}')">${ADD_ICON}</button></span></label>
      <label>Estacas Asignadas:<span class="stake-pick"><select id="${key}-stakes" class="hl-red"></select><button type="button" class="stake-add" title="Agregar o editar estacas" onclick="openStakesModal()">${ADD_ICON}</button></span></label>
-     ${key==="seminarios"?`<label>Curso:<input id="${key}-course" placeholder="Curso del año"></label>`:""}
+     ${key==="seminarios"?`<label class="span-2">Curso:<input id="${key}-course" placeholder="Curso del año"></label>`:""}
      <label>Coordinador:<span class="stake-pick"><select id="${key}-coordinator" onchange="onCoordinatorChange('${key}')"></select><button type="button" class="stake-add" title="Agregar o editar coordinadores, sus números y sus programas" onclick="openCoordinatorsModal('${key}')">${ADD_ICON}</button></span></label>
      <label>Nro. del Coordinador:<input id="${key}-phone" placeholder="Elige un coordinador" title="Número del coordinador elegido: si lo cambias aquí, se guarda en ese coordinador" oninput="onPhoneInput('${key}')"></label>
     </div>
-    <div class="actions"><button class="green" onclick="saveProgramAndBackup('${key}')" title="Guarda y descarga un respaldo (.json) de toda tu configuración">Guardar datos del programa</button><button type="button" onclick="$('${key}-backup-file').click()" title="Recupera toda la configuración desde un respaldo descargado antes">Importar respaldo</button><input type="file" id="${key}-backup-file" accept=".json,application/json" hidden onchange="importBoletinesBackup(this)"></div>
+    <div class="actions"><button class="green" onclick="saveProgramAndBackup('${key}')" title="Guarda y descarga un respaldo (.json) de toda tu configuración"><i class="ico ico-save"></i>Guardar datos del programa</button><button type="button" onclick="$('${key}-backup-file').click()" title="Recupera toda la configuración desde un respaldo descargado antes"><i class="ico ico-upload"></i>Importar respaldo</button><input type="file" id="${key}-backup-file" accept=".json,application/json" hidden onchange="importBoletinesBackup(this)"></div>
     <div class="muted backup-note">Al guardar se descarga un <b>respaldo</b> con todo lo configurado (coordinadores, programas, estacas, barrios, cursos, textos, KPI, períodos, feriados y columnas). Si llega una versión nueva de Boletines, usa <b>Importar respaldo</b> para no empezar de cero.</div>
    ${cardClose}
    ${key==="institutos"?`${cardOpen("Cursos de Institutos","institutos-courses-body")}
@@ -864,7 +1038,7 @@ function pageHTML(key){
  </div>
  <div>
   ${cardOpen("2. Columnas detectadas", key+"-b3", "raw-card")}
-   <div id="${key}-detect" class="detect">Todavía no se han pegado datos.</div><div id="${key}-raw" class="scroll"><div class="empty">Sin datos.</div></div>
+   <div id="${key}-detect" class="detect">Todavía no se han pegado datos.</div><div id="${key}-raw" class="scroll">${emptyState("Sin datos todavía","Aquí verás las columnas tal como llegaron de Wise2.")}</div>
   ${cardClose}
   ${cardOpen("3. Salida / confección de Tabla Final", key+"-b4", "config")}
     <div class="muted">Aquí defines qué significa cada columna de la tabla final. Si la página cambia el orden, puedes reasignar la fuente sin cambiar el diseño del reporte.</div>
@@ -874,10 +1048,10 @@ function pageHTML(key){
       <label>Texto que indica lectura no completada<input id="${key}-read" value="No"></label>
       <label>Texto de crédito válido<input id="${key}-credit" value="${DEFAULT_CREDIT_RULES[key]}"></label>
     </div>
-    <div class="actions"><button class="green" onclick="renderResult('${key}')">Actualizar tabla</button><button onclick="addField('${key}')">+ Campo</button></div>
+    <div class="actions"><button class="green" onclick="renderResult('${key}')"><i class="ico ico-refresh"></i>Actualizar tabla</button><button onclick="addField('${key}')">+ Campo</button></div>
   ${cardClose}
   ${cardOpen("4. Tabla final", key+"-b5")}
-   <div class="actions" style="margin:0 0 4px"><button onclick="downloadJPEG('${key}')">🖼 Descargar JPEG</button><button onclick="printReport('${key}')">Imprimir / PDF</button><button class="green" id="${key}-zip-btn" onclick="downloadAllStudentReports('${key}')">Descargar boletines individuales en ZIP</button></div>
+   <div class="actions" style="margin:0 0 4px"><button id="${key}-jpeg-btn" onclick="downloadJPEG('${key}')"><i class="ico ico-image"></i>Descargar JPEG</button><button onclick="printReport('${key}')"><i class="ico ico-print"></i>Imprimir / PDF</button><button class="green" id="${key}-zip-btn" onclick="downloadAllStudentReports('${key}')"><i class="ico ico-archive"></i>Descargar boletines individuales en ZIP</button></div>
    <div class="kpis"><div class="kpi"><b id="${key}-rows">0</b><span>ALUMNOS</span></div><div class="kpi"><b id="${key}-comp">0</b><span>DEBEN COMPENSAR</span></div><div class="kpi"><b id="${key}-ok">0</b><span>APRUEBAN</span></div></div>
    <div class="report-details">
     <label>Nombre del maestro:<input id="${key}-teacher" class="hl-red" type="text" placeholder="Nombre del maestro"></label>
@@ -888,17 +1062,28 @@ function pageHTML(key){
    </div>
    <div class="export-heading" id="${key}-export-heading" style="display:none"></div>
    <div id="${key}-pf-note" class="pf-note"></div>
-   <div id="${key}-result" class="scroll" style="margin-top:10px"><div class="empty">Sin resultado.</div></div>
+   <div id="${key}-result" class="scroll" style="margin-top:10px">${emptyState("La tabla final aparecerá aquí","Pega los datos de Wise2 en el paso 1 y pulsa «Analizar / ordenar».")}</div>
   ${cardClose}
  </div>
  </div>`;
 }
 function toggleCard(btn,id){
  let el=$(id);if(!el)return;
- let collapsed=el.classList.toggle("collapsed");
- btn.textContent=collapsed?"+":"−";
- btn.title=collapsed?"Mostrar sección":"Ocultar sección";
+ setCardCollapsed(id,!el.classList.contains("collapsed"));
 }
+/*
+ * Oculta o muestra el contenido de una sección. Lo que el usuario oculta o
+ * muestra se recuerda en este navegador ("ui-collapsed"), así la próxima vez
+ * la página se abre como la dejó. remember=false: solo aplica, sin guardar.
+ */
+function setCardCollapsed(id,collapsed,remember=true){
+ let el=$(id);if(!el)return;
+ el.classList.toggle("collapsed",collapsed);
+ let btn=el.previousElementSibling?.querySelector(".collapse-btn");
+ if(btn){btn.setAttribute("aria-expanded",String(!collapsed));btn.title=collapsed?"Mostrar sección":"Ocultar sección"}
+ if(remember){let saved=collapsedCards();saved[id]=collapsed;try{localStorage.setItem("ui-collapsed",JSON.stringify(saved))}catch{}}
+}
+function collapsedCards(){try{let v=JSON.parse(localStorage.getItem("ui-collapsed")||"{}");return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
 $("seminarios").innerHTML=pageHTML("seminarios"); $("institutos").innerHTML=pageHTML("institutos");
 // Configuración de la tabla final guardada (sección 3): se recupera al abrir y se guarda al cambiar las reglas.
 for(const key of ["seminarios","institutos"]){
@@ -1179,13 +1364,31 @@ for(const key of ["seminarios","institutos"]){
  });
 }
 document.querySelectorAll(".bulletin-text-config").forEach(box=>box.querySelectorAll("input,textarea").forEach(el=>el.addEventListener("input",()=>onBulletinTextInput(box.dataset.tab))));
-for(const key of ["seminarios","institutos"]){
- let body=$(key+"-b3");body.classList.add("collapsed");
- let button=body.previousElementSibling?.querySelector(".collapse-btn");
- if(button){button.textContent="+";button.title="Mostrar sección";}
-}
+// "2. Columnas detectadas" empieza oculta; luego se aplica lo que el usuario dejó oculto o visible la última vez.
+for(const key of ["seminarios","institutos"])setCardCollapsed(key+"-b3",true,false);
+for(const [id,collapsed] of Object.entries(collapsedCards()))setCardCollapsed(id,!!collapsed,false);
 
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{current=b.dataset.tab;document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$(current).classList.add("active")});
+/*
+ * Pestañas Seminarios / Institutos / Candidatos a graduación. Se cambian con
+ * clic o con las flechas ← → del teclado, y se recuerda la última abierta
+ * ("ui-last-tab") para volver a ella al abrir la página.
+ */
+const TAB_NAMES=["seminarios","institutos","graduacion"];
+function selectTab(name,{focus=false,remember=true}={}){
+ if(!TAB_NAMES.includes(name))return;
+ current=name;
+ document.querySelectorAll(".tab").forEach(tab=>{let on=tab.dataset.tab===name;tab.classList.toggle("active",on);tab.setAttribute("aria-selected",String(on));tab.tabIndex=on?0:-1;if(on&&focus)tab.focus()});
+ document.querySelectorAll(".page").forEach(page=>page.classList.toggle("active",page.id===name));
+ if(remember)try{localStorage.setItem("ui-last-tab",name)}catch{}
+}
+document.querySelectorAll(".tab").forEach(b=>{
+ b.onclick=()=>selectTab(b.dataset.tab);
+ b.addEventListener("keydown",event=>{
+   let i=TAB_NAMES.indexOf(b.dataset.tab),keys={ArrowRight:i+1,ArrowLeft:i-1,Home:0,End:TAB_NAMES.length-1};
+   if(!(event.key in keys))return;
+   event.preventDefault();selectTab(TAB_NAMES[(keys[event.key]+TAB_NAMES.length)%TAB_NAMES.length],{focus:true});
+ });
+});
 
 const GRADUATION_COURSES_STORAGE="graduation-course-periods";
 const GRADUATION_FIELDS_STORAGE="graduation-table-fields";
@@ -1397,7 +1600,7 @@ function loadGraduationColumnWidths(){
 function graduationColumnWidth(field){
  return graduationColumnWidths[field.id]||GRADUATION_COLUMN_DEFAULTS[field.source]||135;
 }
-function graduationStatus(message,type=""){let el=$("graduation-status");el.textContent=message;el.className="graduation-status "+type}
+function graduationStatus(message,type=""){let el=$("graduation-status");el.textContent=message;el.className="graduation-status "+type;statusFeedback(message,type)}
 function loadGraduationFieldConfig(){
  try{
    let saved=JSON.parse(localStorage.getItem(GRADUATION_FIELDS_STORAGE)||"null");
@@ -2082,7 +2285,7 @@ function renderGraduationReport(){
  let report=$("graduation-report"),summary=$("graduation-summary");
  if(!report||!summary)return;
  summary.replaceChildren();
- if(!graduationRows.length){report.innerHTML='<div class="empty">Carga un Excel o pega el texto de un joven desde Wise2 para generar el informe.</div>';$("graduation-kpi-legend").replaceChildren();return}
+ if(!graduationRows.length){report.innerHTML=emptyState("Aún no hay candidatos","Carga un Excel o pega el texto de un joven desde Wise2 para generar el informe.");$("graduation-kpi-legend").replaceChildren();uiSync();return}
  let flat=graduationRowsFlat(),currentPending=flat.filter(item=>item.course?.type==="current").reduce((sum,item)=>sum+(Number(item.detail.makeup.replace(",","."))||0),0);
  let candidates=graduationRows.filter(student=>["CANDIDATO","FUERTE CANDIDATO"].includes(graduationKpiLabel(student))).length;
  appendGraduationMetric(summary,String(graduationRows.length),"ALUMNOS");
@@ -2117,6 +2320,7 @@ function renderGraduationReport(){
    });
  });
  html+="</tbody></table>";report.innerHTML=html;bindGraduationColumnResize(report.querySelector("table"));
+ uiSync();
 }
 function bindGraduationColumnResize(table){
  if(!table)return;
@@ -2179,7 +2383,8 @@ function printGraduationReport(){
  const cleanup=()=>{heading.style.display="none";card.classList.remove("export-print-target","graduation-print");document.body.classList.remove("print-report");document.title=pageTitle;window.removeEventListener("afterprint",cleanup)};
  window.addEventListener("afterprint",cleanup);window.print();
 }
-async function downloadGraduationJPEG(){
+async function downloadGraduationJPEG(){return runBusy($("graduation-jpeg-btn"),downloadGraduationJPEGNow)}
+async function downloadGraduationJPEGNow(){
  if(!graduationRows.length){graduationStatus("Carga un Excel o pega un joven desde Wise2 antes de descargar la imagen.","warn");return}
  if(!window.html2canvas){graduationStatus("No se pudo cargar el generador de imágenes. Revisa tu conexión a internet.","error");return}
  let wrapper=document.createElement("div"),table=$("graduation-report").querySelector("table");
@@ -2358,13 +2563,15 @@ function openGraduationStudentReport(index){
  $("class-bulletin-download").style.display="none";$("graduation-bulletin-download").style.display="";
  $("graduation-bulletin-print").style.display="";
  $("student-modal").classList.add("open");
+ updateStudentNav();
 }
 function refreshOpenGraduationBulletin(){
  if(activeGraduationStudent===null||!$("student-modal").classList.contains("open"))return;
  let student=graduationRows[activeGraduationStudent];
  if(student)$("student-modal-content").innerHTML=graduationStudentBulletinMarkup(student);
 }
-async function downloadGraduationStudentJPEG(){
+async function downloadGraduationStudentJPEG(){return runBusy($("graduation-bulletin-download"),downloadGraduationStudentJPEGNow)}
+async function downloadGraduationStudentJPEGNow(){
  if(activeGraduationStudent===null)return;
  if(!window.html2canvas){graduationStatus("No se pudo cargar el generador de imágenes. Revisa tu conexión a internet.","error");return}
  let student=graduationRows[activeGraduationStudent];
@@ -2784,8 +2991,10 @@ function process(key){
  if(parsed.mode==="plain")warnings.push("no se detectó una tabla HTML al pegar (se interpretó como texto plano); si alguna celda ocupa varias líneas los datos pueden desordenarse — intenta copiar la tabla completa de la página nuevamente");
  if(warnings.length)setStatus(key,`Datos procesados, pero ${warnings.join("; ")}.${foundText}`,"warn");
  else setStatus(key,`Datos procesados correctamente.${foundText}`,"ok");
+ // Accesos directos a la sección 3 (si hay algo que revisar) y a la tabla final.
+ showNextSteps(key,missing.length>0);
 }
-function setStatus(key,msg,type=""){let e=$(key+"-status");e.textContent=msg;e.className="status "+type}
+function setStatus(key,msg,type=""){let e=$(key+"-status");e.textContent=msg;e.className="status "+type;statusFeedback(msg,type)}
 function renderRaw(key){
  let st=state[key],html="<table><thead><tr>"+st.headers.map((h,i)=>`<th>${esc(h)}<br><small>col ${i+1}</small></th>`).join("")+"</tr></thead><tbody>";
  st.rows.slice(0,20).forEach(r=>{html+="<tr>"+st.headers.map((_,i)=>`<td>${esc(r[i]||"")}</td>`).join("")+"</tr>"});html+="</tbody></table>";$(key+"-raw").innerHTML=html;
@@ -2936,8 +3145,9 @@ function renderResult(key){
    // Antes, al no haber filas, se dejaban los contadores (Registros,
    // Columnas, Con compensación, APRUEBA) con el número de la última vez
    // que sí hubo datos, contradiciendo el "Sin datos." de la tabla.
-   $(key+"-result").innerHTML='<div class="empty">Sin datos.</div>';
+   $(key+"-result").innerHTML=emptyState("La tabla final aparecerá aquí","Pega los datos de Wise2 en el paso 1 y pulsa «Analizar / ordenar».");
    $(key+"-rows").textContent="0";$(key+"-comp").textContent="0";$(key+"-ok").textContent="0";
+   uiSync();
    return;
  }
  // situation() vuelve a leer las reglas y recorre varios campos; antes se
@@ -2976,6 +3186,7 @@ function renderResult(key){
  $(key+"-comp").textContent=situations.filter(s=>s.includes("COMP")).length;
  $(key+"-ok").textContent=situations.filter(s=>s==="APRUEBA").length;
  if(PERIODS_PER_TAB[key])renderPeriodSummary(key);
+ uiSync();
 }
 /*
  * Anchos estándar por campo para "4. Tabla final" (N° angosto, nombres
@@ -3021,8 +3232,9 @@ function bindColumnResize(key){
 // Antes "Limpiar" borraba los datos pegados sin pedir confirmación, sin forma de deshacer, y sin reiniciar los contadores de "4. Tabla final".
 function clearPage(key){
  if(state[key].rows.length && !confirm(`¿Borrar los datos pegados de ${state[key].title}? Esta acción no se puede deshacer.`))return;
- state[key].rows=[];state[key].headers=[];state[key].pastedPlain="";$(key+"-paste").innerHTML="";$(key+"-raw").innerHTML='<div class="empty">Sin datos.</div>';$(key+"-result").innerHTML='<div class="empty">Sin resultado.</div>';$(key+"-mapping").innerHTML="";$(key+"-detect").textContent="Todavía no se han pegado datos.";setStatus(key,"Esperando datos…");
+ state[key].rows=[];state[key].headers=[];state[key].pastedPlain="";$(key+"-paste").innerHTML="";$(key+"-raw").innerHTML=emptyState("Sin datos todavía","Aquí verás las columnas tal como llegaron de Wise2.");$(key+"-result").innerHTML=emptyState("La tabla final aparecerá aquí","Pega los datos de Wise2 en el paso 1 y pulsa «Analizar / ordenar».");$(key+"-mapping").innerHTML="";$(key+"-detect").textContent="Todavía no se han pegado datos.";setStatus(key,"Esperando datos…");
  $(key+"-rows").textContent="0";$(key+"-comp").textContent="0";$(key+"-ok").textContent="0";
+ showNextSteps(key,null);uiSync();
 }
 /*
  * Datos del programa de cada pestaña ("Programa de Seminarios" / "Programa de
@@ -3560,10 +3772,11 @@ function bulletinMarkup(tab,i){
 }
 // Boletín abierto en la ventana: {tab, i} o null.
 let activeStudent=null;
-function openStudentReport(tab,i){activeGraduationStudent=null;$('student-modal').querySelector('.modal-box').classList.remove('graduation-modal');activeStudent={tab,i};$('class-bulletin-download').style.display='';$('graduation-bulletin-download').style.display='none';$('graduation-bulletin-print').style.display='none';$('student-modal-content').innerHTML=bulletinMarkup(tab,i);$('student-modal').classList.add('open')}
+function openStudentReport(tab,i){activeGraduationStudent=null;$('student-modal').querySelector('.modal-box').classList.remove('graduation-modal');activeStudent={tab,i};$('class-bulletin-download').style.display='';$('graduation-bulletin-download').style.display='none';$('graduation-bulletin-print').style.display='none';$('student-modal-content').innerHTML=bulletinMarkup(tab,i);$('student-modal').classList.add('open');updateStudentNav()}
 function closeStudentReport(){$('student-modal').classList.remove('open');$('student-modal').querySelector('.modal-box').classList.remove('graduation-modal');activeStudent=null;activeGraduationStudent=null;$('class-bulletin-download').style.display='';$('graduation-bulletin-download').style.display='none';$('graduation-bulletin-print').style.display='none'}
 async function captureBulletin(tab,i){let wrap=document.createElement('div');wrap.style.cssText='position:fixed;left:-100000px;top:0;background:#fff;width:700px';wrap.innerHTML=bulletinMarkup(tab,i);document.body.append(wrap);try{return await html2canvas(wrap.firstElementChild,{scale:2,backgroundColor:'#fff'})}finally{wrap.remove()}}
-async function downloadStudentJPEG(){if(!activeStudent)return;let {tab,i}=activeStudent,canvas=await captureBulletin(tab,i),a=document.createElement('a');a.download=`boletin_${i+1}.jpeg`;a.href=canvas.toDataURL('image/jpeg',.95);a.click()}
+async function downloadStudentJPEG(){return runBusy($("class-bulletin-download"),downloadStudentJPEGNow)}
+async function downloadStudentJPEGNow(){if(!activeStudent)return;let {tab,i}=activeStudent,canvas=await captureBulletin(tab,i),a=document.createElement('a');a.download=`boletin_${i+1}.jpeg`;a.href=canvas.toDataURL('image/jpeg',.95);a.click()}
 // Quita solo lo que Windows no admite en un nombre de archivo (\ / : * ? " < > | y puntos finales); conserva tildes, ñ, comas y espacios.
 function safeFileName(v){return clean(String(v??"").replace(/[\\/:*?"<>|]+/g," ")).replace(/\.+$/,"").trim()}
 /*
@@ -3680,7 +3893,9 @@ function download(key){
  * contenedor temporal fuera de pantalla, sin l\u00edmite de alto/ancho, para
  * capturarla completa.
  */
-async function downloadJPEG(key){
+// El botón muestra «Generando…» mientras se arma la imagen (y un doble clic no descarga dos veces).
+async function downloadJPEG(key){return runBusy($(key+"-jpeg-btn"),()=>downloadJPEGNow(key))}
+async function downloadJPEGNow(key){
  let st=state[key];
  if(!st.rows.length)return;
  let table=$(key+"-result").querySelector("table");
@@ -3796,6 +4011,155 @@ García\tMaría\tNo\tNo - 0%\t42%\tNo\t3\tEditar`;
  }
  state[key].pastedPlain="";$(key+"-paste").innerText=text;process(key);
 }
+/*
+ * ===================================================================================
+ * Capa de interfaz: avisos flotantes, campos clave del boletín, contadores en
+ * las pestañas, accesos directos después de analizar, ventanas con Esc y foco, y
+ * «Anterior / Siguiente» entre boletines. Solo ayuda a usar la herramienta: no
+ * cambia cómo se procesan los datos ni lo que se exporta.
+ * (Todo son funciones: algunas se llaman antes de llegar a este punto del archivo.)
+ * ===================================================================================
+ */
+// Aviso flotante breve. type: "ok" | "warn" | "error" | "" (información).
+function toast(message,type=""){
+ let box=$("toasts");if(!box||!clean(message))return;
+ // Un aviso idéntico que todavía está a la vista no se repite.
+ if([...box.children].some(item=>!item.classList.contains("leaving")&&item.dataset.text===message))return;
+ let icon={ok:"check",warn:"alert",error:"alert"}[type]||"info";
+ let item=document.createElement("div");item.className="toast "+type;item.dataset.text=message;
+ item.innerHTML=`<i class="ico ico-${icon}" aria-hidden="true"></i><span>${esc(message)}</span><button type="button" aria-label="Cerrar aviso" title="Cerrar"><i class="ico ico-x"></i></button>`;
+ const close=()=>{if(item.classList.contains("leaving"))return;item.classList.add("leaving");setTimeout(()=>item.remove(),200)};
+ item.querySelector("button").onclick=close;
+ box.append(item);
+ while(box.children.length>3)box.firstElementChild.remove();
+ setTimeout(close,type==="ok"?3500:type===""?4500:7000);
+}
+// Resumen corto de un mensaje de estado largo: la primera oración o frase; el detalle completo sigue en el recuadro.
+function shortStatus(text){
+ text=clean(text);if(text.length<=150)return text;
+ let sentence=text.search(/[.!?](?=\s+[A-ZÁÉÍÓÚÑ¿¡])/);
+ if(sentence>=20&&sentence<150)return text.slice(0,sentence+1);
+ let clause=text.search(/;| — /);
+ if(clause>=20&&clause<150)return text.slice(0,clause)+"…";
+ return text.slice(0,147).trimEnd()+"…";
+}
+// Lo que se informa en los recuadros de estado también sale como aviso flotante, porque el recuadro puede quedar fuera de la vista.
+function statusFeedback(message,type){
+ try{if(["ok","warn","error"].includes(type))toast(shortStatus(message),type)}catch(error){console.error(error)}
+ uiSync();
+}
+// Mantiene al día los indicadores de la interfaz (campos clave y contadores de las pestañas).
+function uiSync(){try{syncKeyFields();syncTabBadges()}catch(error){console.error(error)}}
+// Campos clave del boletín vacíos (Estacas, Maestro, Barrio / Curso, Fecha del reporte): se marcan para no olvidarlos.
+function syncKeyFields(){document.querySelectorAll(".hl-red,.hl-orange").forEach(el=>el.classList.toggle("is-empty",!clean(el.value)))}
+// Número de alumnos cargados en cada pestaña, junto a su nombre.
+function syncTabBadges(){
+ let graduation=0;try{graduation=graduationRows.length}catch{}
+ let counts={seminarios:state.seminarios.rows.length,institutos:state.institutos.rows.length,graduacion:graduation};
+ for(const [name,count] of Object.entries(counts)){
+   let badge=$("tab-count-"+name);if(!badge)continue;
+   badge.hidden=!count;badge.textContent=count?String(count):"";
+   badge.title=count?`${count} ${name==="graduacion"?"candidato(s)":"alumno(s)"} cargado(s)`:"";
+ }
+}
+/*
+ * Después de «Analizar / ordenar»: botón para ir directo a la tabla final y, si
+ * alguna columna no se detectó, otro para revisar la sección 3.
+ * needsReview=null los oculta (al limpiar).
+ */
+function showNextSteps(key,needsReview){
+ let box=$(key+"-next");if(!box)return;
+ if(needsReview===null||!state[key].rows.length){box.hidden=true;box.replaceChildren();return}
+ box.innerHTML=(needsReview?`<button type="button" onclick="goToCard('${key}-b4')"><i class="ico ico-alert"></i>Revisar columnas (sección 3)</button>`:"")
+   +`<button type="button" class="primary" onclick="goToCard('${key}-b5')"><i class="ico ico-down"></i>Ir a la tabla final</button>`;
+ box.hidden=false;
+}
+// Muestra la sección (si estaba oculta, sin cambiar lo recordado) y la lleva a la vista, debajo de la barra superior.
+function goToCard(bodyId){
+ let body=$(bodyId);if(!body)return;
+ setCardCollapsed(bodyId,false,false);
+ let reduce=window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+ body.closest(".card").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+}
+// Botón ocupado mientras trabaja (descargas JPEG): muestra «Generando…» e ignora clics repetidos.
+async function runBusy(button,task){
+ if(!button)return task();
+ if(button.getAttribute("aria-busy")==="true")return;
+ let label=button.innerHTML;
+ button.style.minWidth=button.offsetWidth+"px";button.disabled=true;button.setAttribute("aria-busy","true");
+ button.innerHTML=`<span class="zip-spinner" aria-hidden="true"></span><span>Generando…</span>`;
+ try{return await task()}
+ finally{button.innerHTML=label;button.disabled=false;button.removeAttribute("aria-busy");button.style.minWidth=""}
+}
+// Ventana del boletín: posición del alumno abierto, total y cómo abrir otro (Seminarios/Institutos o Candidatos).
+function studentNavInfo(){
+ if(activeStudent){let {tab,i}=activeStudent;return {pos:i,total:state[tab].rows.length,open:j=>openStudentReport(tab,j)}}
+ if(activeGraduationStudent!==null)return {pos:activeGraduationStudent,total:graduationRows.length,open:j=>openGraduationStudentReport(j)};
+ return null;
+}
+function updateStudentNav(){
+ let nav=$("student-nav"),info=studentNavInfo();if(!nav)return;
+ nav.hidden=!info||info.total<2;if(nav.hidden)return;
+ $("student-pos").textContent=`Boletín ${info.pos+1} de ${info.total}`;
+ $("student-prev").disabled=info.pos<=0;$("student-next").disabled=info.pos>=info.total-1;
+}
+function studentStep(delta){
+ let info=studentNavInfo();if(!info)return;
+ let next=info.pos+delta;if(next<0||next>=info.total)return;
+ info.open(next);
+ let box=$("student-modal").querySelector(".modal-box");if(box)box.scrollTop=0;
+}
+/*
+ * Ventanas (Estacas, Programas, Coordinadores, Barrios y Boletín): se cierran con
+ * Esc, el foco queda dentro mientras están abiertas y vuelve al botón que las abrió.
+ * En el boletín, ← y → pasan al alumno anterior o siguiente.
+ */
+(function(){
+ const closers={"stakes-modal":closeStakesModal,"programs-modal":closeProgramsModal,"coordinators-modal":closeCoordinatorsModal,"wards-modal":closeWardsModal,"student-modal":closeStudentReport};
+ document.querySelectorAll(".modal").forEach(modal=>{
+   modal.setAttribute("role","dialog");modal.setAttribute("aria-modal","true");
+   let box=modal.querySelector(".modal-box");if(box)box.tabIndex=-1;
+   let returnFocus=null,wasOpen=false;
+   new MutationObserver(()=>{
+     let open=modal.classList.contains("open");
+     if(open&&!wasOpen){returnFocus=document.activeElement;requestAnimationFrame(()=>{if(box&&!box.contains(document.activeElement))box.focus({preventScroll:true})})}
+     if(!open&&wasOpen&&returnFocus&&document.contains(returnFocus))returnFocus.focus({preventScroll:true});
+     wasOpen=open;
+   }).observe(modal,{attributes:true,attributeFilter:["class"]});
+ });
+ document.addEventListener("keydown",event=>{
+   let open=[...document.querySelectorAll(".modal.open")];if(!open.length)return;
+   let modal=open[open.length-1],box=modal.querySelector(".modal-box");
+   if(event.key==="Escape"){event.preventDefault();closers[modal.id]?.();return}
+   let typing=event.target?.closest?.("input,textarea,select,[contenteditable]");
+   if(modal.id==="student-modal"&&!typing&&(event.key==="ArrowLeft"||event.key==="ArrowRight")&&!event.altKey&&!event.ctrlKey&&!event.metaKey){event.preventDefault();studentStep(event.key==="ArrowLeft"?-1:1);return}
+   if(event.key!=="Tab"||!box)return;
+   let items=[...box.querySelectorAll('button,input,select,textarea,[href],[tabindex]:not([tabindex="-1"])')].filter(el=>!el.disabled&&el.type!=="hidden"&&el.getClientRects().length);
+   if(!items.length)return;
+   let first=items[0],last=items[items.length-1];
+   if(event.shiftKey&&(document.activeElement===first||document.activeElement===box)){event.preventDefault();last.focus()}
+   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+ });
+})();
+// Alto real de la barra superior (cambia si las pestañas pasan a otra línea): lo usan las columnas fijas.
+(function(){
+ let bar=$("app-bar");if(!bar)return;
+ const update=()=>document.documentElement.style.setProperty("--bar-h",bar.offsetHeight+"px");
+ update();
+ if(window.ResizeObserver)new ResizeObserver(update).observe(bar);else addEventListener("resize",update);
+})();
+// Campos clave: se revisan al escribir o elegir, y cuando un desplegable cambia sus opciones (programa → estacas → barrios).
+document.addEventListener("input",syncKeyFields);
+document.addEventListener("change",syncKeyFields);
+document.querySelectorAll(".program-config,.report-details").forEach(box=>new MutationObserver(syncKeyFields).observe(box,{childList:true,subtree:true}));
+// Atajo: Ctrl + Enter en el recuadro de pegado = «Analizar / ordenar».
+for(const key of ["seminarios","institutos"]){
+ $(key+"-paste")?.addEventListener("keydown",event=>{if(event.key==="Enter"&&(event.ctrlKey||event.metaKey)){event.preventDefault();process(key)}});
+ let analyze=$(key+"-paste")?.parentElement.querySelector(".actions .primary");if(analyze)analyze.title="Analizar / ordenar (Ctrl + Enter)";
+}
+// Se vuelve a la última pestaña usada y se dibujan los indicadores.
+try{let last=localStorage.getItem("ui-last-tab");if(last&&last!==current)selectTab(last,{remember:false})}catch{}
+uiSync();
 </script>
 </body>
 </html>
