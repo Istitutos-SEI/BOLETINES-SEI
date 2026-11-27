@@ -868,8 +868,8 @@ function onKpiInput(tab){
 /*
  * Color del texto de la columna Lectura en las tablas finales (Seminarios,
  * Institutos y Candidatos a graduación), por separado en "reading-kpi-<pestaña>".
- * El valor se clasifica como Sí / No con graduationComplete ("Sí", "Yes",
- * "Sí - 100%", "No - 0%", "3/3"…); lo que no se reconoce queda sin color.
+ * El valor se clasifica como Sí / No con readingStatus ("Sí", "Yes",
+ * "Sí - 75%", "No - 0%", "3/3"…); lo que no se reconoce queda sin color.
  */
 const READING_KPI_DEFAULTS={yes:"#15803d",no:"#b91c1c"};
 const readingKpi={};
@@ -892,9 +892,29 @@ function initReadingKpi(tab){
    });
  }
 }
+/*
+ * Clasifica una celda de Lectura como "Sí", "No" o "" (sin color):
+ * 1) En Seminarios/Institutos, si coincide con «Texto que indica lectura no
+ *    completada», es No (la misma regla que pone LEC en la columna Situación).
+ * 2) Si empieza con Sí/No ("Sí - 75%", "No - 38%"), esa palabra manda; el
+ *    porcentaje que la acompaña es informativo. Antes se miraba solo el
+ *    porcentaje y "Sí - 75%" salía en rojo por no llegar a 100%.
+ * 3) Si no, se interpreta con graduationComplete ("3/3", "100%"…).
+ */
+function readingStatus(tab,value){
+ let text=clean(value);
+ if(!text)return "";
+ let rules=($(tab+"-read")?.value||"").split(",").map(norm).filter(Boolean);
+ if(rules.some(rule=>norm(text).includes(rule)))return "No";
+ let first=graduationNorm(text).split(" ")[0];
+ if(["si","yes","completo","completa"].includes(first))return "Sí";
+ if(["no","incompleto","incompleta"].includes(first))return "No";
+ let kind=graduationComplete(text);
+ return kind==="—"?"":kind;
+}
 // Estilo en línea (así también sale en el JPEG y el PDF) para una celda de Lectura, o "" si no es Sí ni No.
 function readingCellStyle(tab,value){
- let kind=graduationComplete(value),settings=readingKpi[tab]||loadReadingKpi(tab);
+ let kind=readingStatus(tab,value),settings=readingKpi[tab]||loadReadingKpi(tab);
  return kind==="Sí"?`color:${settings.yes};font-weight:800`:kind==="No"?`color:${settings.no};font-weight:800`:"";
 }
 for(const key of Object.keys(state)){
