@@ -182,6 +182,13 @@ button.is-loading:disabled{cursor:progress}
 .student-bulletin{max-width:680px;padding:26px 28px;border:1px solid #d9e5f0;border-radius:18px;box-shadow:0 14px 36px #18324a12;font-family:Inter,"Segoe UI",Arial,sans-serif;color:#203047}.bulletin-brand{color:#153b67;font-size:31px;letter-spacing:5px;font-weight:900;text-shadow:none}.bulletin-program{text-align:center;margin:3px 0 13px;color:#168b8b;font-size:15px;font-weight:750;letter-spacing:.4px}.bulletin-org{border-top:1px solid #dce6ed;padding-top:9px;margin:0 0 15px;color:#607488;font-size:9px;letter-spacing:1.1px}.bulletin-title{color:#13836f;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:19px;letter-spacing:1.4px;margin:12px 0 4px}.bulletin-date{color:#50718b;font-size:11px;margin-bottom:14px}.bulletin-student{border:1px solid #cbdce7;background:linear-gradient(110deg,#f5fbfc,#f7f9ff);border-radius:11px;padding:13px 10px;font-size:23px;color:#214e68;margin-bottom:13px}.bulletin-meta,.bulletin-stats{border-collapse:separate;border-spacing:3px;table-layout:fixed}.bulletin-meta th,.bulletin-stats th{background:#246f83;color:#fff;font-size:10px;letter-spacing:.35px;padding:9px 5px}.bulletin-meta th:first-child,.bulletin-stats th:first-child{border-radius:7px 0 0 0}.bulletin-meta th:last-child,.bulletin-stats th:last-child{border-radius:0 7px 0 0}.bulletin-meta td,.bulletin-stats td{background:#f7fafc;border:1px solid #dbe5eb;border-radius:0 0 6px 6px;color:#263a50;font-size:12px;padding:9px 5px}.bulletin-course{background:#e9f4f5;border-left:4px solid #258398;border-radius:8px;color:#1d566a;text-align:left;font-size:17px;padding:12px 15px;margin-top:13px}.bulletin-stats{margin-top:3px}.bulletin-stats th{background:#2a7e91}.bulletin-stats td{background:#fff;font-size:18px;color:#183c55;padding:11px 4px;font-variant-numeric:tabular-nums}.bulletin-stats td:nth-child(3){color:#14836f}.bulletin-message{border:1px solid #c7deeb;border-left:4px solid #35a3a0;border-radius:10px;background:#f8fbfd;padding:15px 16px;margin-top:15px;color:#334b60;font-size:11px;line-height:1.65}.bulletin-message p{margin:0 0 8px}.bulletin-message b u{color:#176e78;text-decoration-color:#84c5c2;text-underline-offset:2px}.bulletin-signature{border-top:1px solid #e1eaf0;margin:18px 0 0;padding:12px 4px 0;color:#426a82;font-size:11px;line-height:1.7}.bulletin-signature b{color:#183d59}
 @media(max-width:1050px){.grid{grid-template-columns:1fr}.grid>.left{position:static;max-height:none;overflow:visible;padding:0;margin:0}.graduation-layout{grid-template-columns:1fr}.graduation-config{position:static;max-height:none;overflow:visible;padding:0;margin:0}}@media(max-width:650px){.graduation-course-row{grid-template-columns:1fr 1fr}.graduation-course-head{display:none}.graduation-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,1fr)}.mapping,.head{grid-template-columns:1fr}.rules,.report-details,.program-config{grid-template-columns:1fr}.bulletin-brand{font-size:28px}.bulletin-title{font-size:16px}}
 @media print{@page{size:portrait;margin:12mm}body.print-report *{visibility:hidden!important}body.print-report .export-print-target,body.print-report .export-print-target *{visibility:visible!important}body.print-report .export-print-target{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;border:0;box-shadow:none}.export-print-target .card-head,.export-print-target .kpis,.export-print-target .report-details,.export-print-target .graduation-summary,.export-print-target .actions{display:none!important}.export-print-target .card-body{display:block!important}.export-print-target .scroll,.export-print-target .graduation-report-wrap{overflow:visible!important;max-height:none!important;border:0}.export-print-target table{width:100%!important;table-layout:fixed!important;font-size:9px}.export-print-target th,.export-print-target td{white-space:normal;overflow-wrap:anywhere;word-break:normal;overflow:visible;text-overflow:clip;padding:4px 3px}.export-print-target .col-resize,.export-print-target .student-action-col,.export-print-target .student-action-cell{display:none!important}}
+/*
+ * Tabla final de Seminarios/Institutos en el PDF: letra más grande (antes 9px) y el encabezado con su color verde azulado;
+ * sin él, el texto blanco del encabezado casi no se veía sobre el papel. Los anchos se ajustan al contenido (no a los de
+ * pantalla): las columnas cortas (.short-cell: N°, Lectura, %, Debe compensar…) no se parten y quedan angostas; el nombre
+ * y la Situación toman el resto y, si hace falta, pasan a otra línea entre palabras (nunca a mitad de palabra).
+ */
+@media print{.export-print-target .final-table{font-size:12px;table-layout:auto!important}.export-print-target .final-table th,.export-print-target .final-table td{overflow-wrap:normal;word-break:normal}.export-print-target .final-table th{width:auto!important;font-size:11px;letter-spacing:.2px;padding:7px 5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.export-print-target .final-table td{padding:6px 5px}.export-print-target .final-table td.short-cell{white-space:nowrap}}
 @media print{@page graduation-report{size:landscape;margin:8mm}.graduation-print{page:graduation-report}.graduation-report{font-size:7px!important}.graduation-report th,.graduation-report td{padding:4px 3px}}
 @media print{@page candidate-bulletin{size:landscape;margin:8mm}.candidate-bulletin-print{page:candidate-bulletin}.candidate-bulletin-print .graduation-bulletin{max-width:none!important;width:100%!important;border:0!important;box-shadow:none!important}.candidate-bulletin-print .graduation-bulletin-content{grid-template-columns:minmax(0,2.2fr) minmax(180px,1fr)}.graduation-col-resize{display:none!important}}
 @media(max-width:700px){.graduation-bulletin-content{grid-template-columns:1fr}.graduation-bulletin{padding:15px}.graduation-bulletin-progress{grid-template-columns:1fr;text-align:center}.graduation-bulletin-progress-track{grid-column:auto}.graduation-comp-total{grid-template-columns:1fr}.graduation-course-row{grid-template-columns:1fr 1fr}}
@@ -916,6 +923,11 @@ function readingStatus(tab,value){
 function readingCellStyle(tab,value){
  let kind=readingStatus(tab,value),settings=readingKpi[tab]||loadReadingKpi(tab);
  return kind==="Sí"?`color:${settings.yes};font-weight:800`:kind==="No"?`color:${settings.no};font-weight:800`:"";
+}
+// Celda Situación: APRUEBA en verde y «Debe …» en rojo (en línea, para que salga igual en pantalla, JPEG y PDF).
+function situationCellStyle(value){
+ let text=clean(value);
+ return text==="APRUEBA"?"color:#15803d;font-weight:800":/^debe\b/i.test(text)?"color:#b91c1c;font-weight:800":"";
 }
 for(const key of Object.keys(state)){
  try{
@@ -3192,12 +3204,14 @@ function renderResult(key){
    let rowStyle=category?` style="--kpi-row-bg:${kpi.colors[category]}"`:"";
    html+=`<tr${category?` class="kpi-${category}"${rowStyle}`:""}>`+vis.map(f=>{
      // Nombres alineados a la izquierda; el resto centrado, como en las tablas del boletín.
-     let cls=[f.key==="asistencia"?"asist-cell":"",["nombre","apellidos","nombres"].includes(f.key)?"name-cell":""].filter(Boolean).join(" ");
+     // short-cell: columnas de valores cortos que en el PDF no se parten en dos líneas (ver CSS de impresión).
+     let cls=[f.key==="asistencia"?"asist-cell":"",["nombre","apellidos","nombres"].includes(f.key)?"name-cell":"",["n","anio","credito","lectura","asistencia","comp","evaluacion"].includes(f.key)?"short-cell":""].filter(Boolean).join(" ");
      let cellClass=cls?` class="${cls}"`:"";
      let value=outputValue(st,f,r,i,situations[i]);
-     let readStyle=f.key==="lectura"?readingCellStyle(key,value):"";
+     // Estilos en línea para que salgan igual en pantalla, JPEG y PDF: Lectura y Situación con color, Debe compensar en negrita y algo más grande.
+     let cellStyle=f.key==="lectura"?readingCellStyle(key,value):f.key==="situacion"?situationCellStyle(value):f.key==="comp"?"font-weight:800;font-size:1.2em":"";
      let adj=adjusted[i],title=adj&&(f.key==="asistencia"||f.key==="comp")?`${adj.attended} asistencias de ${adj.sessions} sesiones del período`:value;
-     return `<td${cellClass}${readStyle?` style="${readStyle}"`:""} title="${esc(title)}">${esc(value)}</td>`;
+     return `<td${cellClass}${cellStyle?` style="${cellStyle}"`:""} title="${esc(title)}">${esc(value)}</td>`;
    }).join("")+`<td class="student-action-cell"><button class="student-report-btn" onclick="openStudentReport('${key}',${i})">Ver boletín</button></td></tr>`;
  });
  html+="</tbody></table>";$(key+"-result").innerHTML=html;
